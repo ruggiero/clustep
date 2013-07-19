@@ -2,6 +2,7 @@ from snapread import *
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+from bisect import *
 
 a = 200
 Mh = 100000
@@ -9,62 +10,71 @@ N = 100000
 G = 43007.1
 
 def hernquist_density(r):
-	return (Mh * a) / (2 * np.pi * (r + 0.000001) * (r + a)**3)
+	if(r == 0):
+		return 0
+	else:
+		return (Mh * a) / (2 * np.pi * r * (r + a)**3)
 
 def radial_speed_squared(r):
-	return ((G * Mh) / (12 * a)) * ((12 * r * (r + a)**3 * \
-		   np.log((r + a) / r)) / a**4 - (r / (r + a)) * (25 + 52 * r / a +\
-		   42 * (r / a)**2 + 12 * (r / a)**3))
+	return ((G * Mh) / (12 * a)) * ((12 * r * (r + a)**3 *\
+				np.log((r + a) / r)) / a**4 - (r / (r + a)) * (25 + 52 * r / a\
+				+ 42 * (r / a)**2 + 12 * (r / a)**3))
 
-def density_distribution(p_list):
-	radii = []
-	distribution = []
-	for i in p_list:
-		r = np.linalg.norm(i.pos)
-		radii.append(r)
-	radii.sort()
+# Given a data vector, in which each element represents a different particle
+# by a list of the form [radius, radial_speed^2], ordered according to the
+# radii; and a multiplication factor, returns the right indexes of a log
+# partition of the vector. Also returns an auxiliary vector, which will be
+# useful in the functions that calculate the distrubution functions.
+def log_partition(data, factor):
+	limits = []
+	auxiliary = []
+	radii = [i[0] for i in data]
 	left_limit = 0
 	right_limit = 0.01
 	left_index = 0
 	while(right_limit < 200 * a):
-
-		# This is a esoteric, yet fast, way to find the index for the first element in
-		# the vector x which is greater than right_limit
-		right_index = next(x[0] for x in enumerate(radii[left_index:]) if x[1] > right_limit)
-		count = right_index - left_index
-		density = 10**10 * (count * Mh / N) / (4 / 3. * np.pi * (right_limit**3 - left_limit**3))
-		distribution.append([(10 * right_limit + left_limit) / 11, density])
+		right_index = left_index + bisect_left(radii[left_index:], right_limit)
+		limits.append(right_index)
+		auxiliary.append([right_index - left_index, (right_limit + left_limit) /
+			2])
 		left_limit = right_limit
 		left_index = right_index
-		right_limit *= 2
+		right_limit *= factor
+	return limits, auxiliary
+
+# Returns a list containing elements of the form [radius, density]
+def density_distribution(data, partition, aux):
+	distribution = []
+	left = 0
+	for j in range(len(partition)):
+		right = partition[j]
+		count = aux[j][0]
+		middle_radius = aux[j][1]
+		if(count > 0):
+			density = 10**10 * (3.0 * count * Mh) / (4 * N * np.pi *
+				(data[right][0]**3 - data[left][0]**3))
+			distribution.append([middle_radius, density])
+		else:
+			distribution.append([middle_radius, 0])
+		left = right
 	return distribution
 
-def radial_speed_distribution(p_list):
-
-	# vector which will hold vectors of the form [radius, vr^2]
-	pairs = []
+# Returns a list containing elements of the form [radius, density]
+def radial_speed_distribution(data, partition, aux):
 	distribution = []
-	for i in p_list:
-		r = np.linalg.norm(i.pos)
-		vr = np.dot(i.pos, i.vel) / r
-		pairs.append([r, vr**2])
-	pairs = sorted(pairs)
-	left_limit = 0
-	right_limit = 0.01
-	left_index = 0
-	while(right_limit < 200 * a):
-		sum_ = 0
-		right_index = next(x[0] for x in enumerate(pairs[left_index:]) if x[1][0] > right_limit)
-		count = right_index - left_index
+	left = 0
+	for j in range(len(partition)):
+		right = partition[j]
+		count = aux[j][0]
+		middle_radius = aux[j][1]
 		if(count > 0):
-			for i in range(left_index, right_index):
-				sum_ += pairs[i][1]
-			distribution.append([(10 * right_limit + left_limit) / 11, sum_ / count])
+			sum_ = 0
+			for i in range(left, right):
+				sum_ += data[i][1]
+			distribution.append([middle_radius, sum_ / count])
 		else:
-			distribution.append([(10 * right_limit + left_limit) / 11, 0])
-		left_limit = right_limit
-		left_index = right_index
-		right_limit *= 2
+			distribution.append([middle_radius, 0])
+		left = right
 	return distribution
 
 def main():
@@ -75,10 +85,18 @@ def main():
 	h = header(snapshot) 
 	p_list = read_data(snapshot, h)	
 	snapshot.close()
+	data = []
+	for i in p_list:
+		r = np.linalg.norm(i.pos)
+		vr = np.dot(i.pos, i.vel) / r
+		data.append([r, vr**2])
+	data = sorted(data)
+	part, aux = log_partition(data, 2)
 
 	# Dealing with the density distribution plot
-	x = density_distribution(p_list)
-	x_axis = np.logspace(np.log10(x[0][0]), np.log10(x[len(x) - 1][0]), num=1000)
+	x = density_distribution(data, part, aux)
+	x_axis = np.logspace(np.log10(x[0][0]), np.log10(x[len(x) - 1][0]),\
+		num=1000)
 	p1, = plt.plot([i[0] for i in x], [i[1] for i in x], 'o')
 	p2, = plt.plot(x_axis, [10**10 * hernquist_density(i) for i in x_axis])
 	plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
@@ -94,8 +112,9 @@ def main():
 	print "Done with density for " + input_
 
 	# Now the radial speed distribution plot
-	x = radial_speed_distribution(p_list)
-	x_axis = np.logspace(np.log10(x[0][0]), np.log10(x[len(x) - 1][0]), num=1000)
+	x = radial_speed_distribution(data, part, aux)
+	x_axis = np.logspace(np.log10(x[0][0]), np.log10(x[len(x) - 1][0]),\
+		num=1000)
 	formatter = FuncFormatter(lambda x, pos : "%1.2f" % (x / 10**6))
 	ax = plt.subplot(111)
 	ax.yaxis.set_major_formatter(formatter)
