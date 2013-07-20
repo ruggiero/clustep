@@ -47,7 +47,7 @@ def log_partition(data, factor):
 def density_distribution(data, partition, aux):
 	distribution = []
 	left = 0
-	for j in range(len(partition)):
+	for j in np.arange(len(partition)):
 		right = partition[j]
 		count = aux[j][0]
 		middle_radius = aux[j][1]
@@ -64,14 +64,12 @@ def density_distribution(data, partition, aux):
 def radial_speed_distribution(data, partition, aux):
 	distribution = []
 	left = 0
-	for j in range(len(partition)):
+	for j in np.arange(len(partition)):
 		right = partition[j]
 		count = aux[j][0]
 		middle_radius = aux[j][1]
 		if(count > 0):
-			sum_ = 0
-			for i in range(left, right):
-				sum_ += data[i][1]
+			sum_ = sum(i[1] for i in data[left:right])
 			distribution.append([middle_radius, sum_ / count])
 		else:
 			distribution.append([middle_radius, 0])
@@ -105,8 +103,10 @@ def radial_speed_plot(input_, data, part, aux):
 	ax.yaxis.set_major_formatter(formatter)
 
 	# 0.9574 is a conversion factor from kpc^2/Gyr^2 to km^2/s^2
-	p1, = plt.plot([i[0] for i in dist], [0.9574 * i[1] for i in dist], 'o')
-	p2, = plt.plot(x_axis, 0.9574 * radial_speed_squared(x_axis))
+	#p1, = plt.plot([i[0] for i in dist], [0.9574 * i[1] for i in dist], 'o')
+	p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
+	#p2, = plt.plot(x_axis, 0.9574 * radial_speed_squared(x_axis))
+	p2, = plt.plot(x_axis, radial_speed_squared(x_axis))
 	plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
 	plt.xlabel("Radius (kpc)")
 	plt.ylabel("$v_{r}^{2}$ (10$^{6}$ km$^{2}$/s$^{2}$)")

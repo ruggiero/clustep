@@ -21,7 +21,7 @@ saida = sys.argv[1]
 # creating a temporary folder where the input files for snapwrite.py will be
 # created and copying the file header.txt to this folder
 def init():
-	global Mh, a, N
+	global Mh, a, N, vg
 	if not (os.path.isfile("header.txt") and os.path.isfile(\
 			"cluster_param.txt")):
 		print "The following parameter files are required: header.txt and\
@@ -32,6 +32,7 @@ def init():
 	shutil.copyfile("header.txt", folder + "header.txt")
 	x = process_input("cluster_param.txt")
 	Mh, a, N = float(x[0]), float(x[1]), float(x[2])
+	vg = ((G * Mh) / a)**0.5
 
 def inverse_cumulative(Mc):
 	return (a * ((Mc * Mh)**0.5 + Mc)) / (Mh - Mc)
@@ -44,7 +45,6 @@ def DF(E):
 	if(E >= 0):
 		return 0
 	else:
-		vg = ((G * Mh) / a)**0.5
 		q = (-(a * E) / (G * Mh))**0.5
 		return Mh * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
 			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
@@ -65,7 +65,7 @@ def set_positions():
 def set_velocities(radii):
 	pots = potential(radii)
 	vels = []
-	for i in range(len(pots)):
+	for i in np.arange(len(pots)):
 		fmax = DF(pots[i])
 
 		# random coordinates in the rectangle (pots[i], 0) x (0, fmax)
