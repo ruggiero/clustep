@@ -60,7 +60,7 @@ def density_distribution(data, partition, aux):
 		left = right
 	return distribution
 
-# Returns a list containing elements of the form [radius, density]
+# Returns a list containing elements of the form [radius, vr^2]
 def radial_speed_distribution(data, partition, aux):
 	distribution = []
 	left = 0
@@ -101,11 +101,7 @@ def radial_speed_plot(input_, data, part, aux):
 	formatter = FuncFormatter(lambda x, pos : "%1.2f" % (x / 10**6))
 	ax = plt.subplot(111)
 	ax.yaxis.set_major_formatter(formatter)
-
-	# 0.9574 is a conversion factor from kpc^2/Gyr^2 to km^2/s^2
-	#p1, = plt.plot([i[0] for i in dist], [0.9574 * i[1] for i in dist], 'o')
 	p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
-	#p2, = plt.plot(x_axis, 0.9574 * radial_speed_squared(x_axis))
 	p2, = plt.plot(x_axis, radial_speed_squared(x_axis))
 	plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
 	plt.xlabel("Radius (kpc)")

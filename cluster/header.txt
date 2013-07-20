@@ -19,7 +19,7 @@
 
 # The total number of particles across all files for this simulation,
 # for the 6 types
-0	1000000	0	0	0	0	
+0	100000	0	0	0	0	
 
 # Cooling flag
 0

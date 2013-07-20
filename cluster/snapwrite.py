@@ -60,7 +60,7 @@ def read_header(folder):
     h_data.append(float(h_file[12].split('\t')[0])) # hubble_param
 
     # blank, present in the header
-    for i in range(96):
+    for i in np.arange(96):
         h_data.append('\0')
     s = struct.Struct(' iiiiii dddddd d d i i iiiiii i i dddd cccccccccccc\
                         cccccccccccccccccccccccccccccccccccccccccccccccccc\
@@ -72,7 +72,7 @@ def write_dummy(f, n_dummies):
     dummy = [256]
     s = struct.Struct('i')
     d = s.pack(*dummy)
-    for i in range(n_dummies):
+    for i in np.arange(n_dummies):
         f.write(d)
 
 def write_block(f, block_data, data_type):

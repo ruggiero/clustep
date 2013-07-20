@@ -37,28 +37,29 @@ class particle:
 # For reading the ints that are present in the beginning and in the end
 # of each block
 def read_dummy(snapshot, n_dummies):
-	for i in range(n_dummies):
+	for i in np.arange(n_dummies):
 		dummy = np.fromfile(snapshot, 'int32', 1)
 
 def read_data(snapshot, h):
 	p_list = []
 	n_part = sum(h.n_part)
 	read_dummy(snapshot, 1)
+	range_ = np.arange(n_part)
 
 	# positions
-	for i in range(n_part):
+	for i in range_:
 		p = particle()
 		p.pos = np.fromfile(snapshot, 'float32', 3)
 		p_list.append(p)
 	read_dummy(snapshot, 2)
 	
 	# velocities
-	for i in range(n_part):
+	for i in range_:
 		p_list[i].vel = np.fromfile(snapshot, 'float32', 3)
 	read_dummy(snapshot, 2)
 
 	# IDs
-	for i in range(n_part):
+	for i in range_:
 		p_list[i].ID = np.fromfile(snapshot, 'int32', 1)
 	read_dummy(snapshot, 2)
 
@@ -66,13 +67,13 @@ def read_data(snapshot, h):
 	# particle of type 'i' is declared as 0, in the header
 	cur = 0
 	read_something = 0
-	for i in range(6):
+	for i in np.arange(6):
 		if(h.mass[i] != 0):
 			cur += h.n_part[i]
 			continue
 		else:
 			read_something = 1
-			for j in range(h.n_part[i]):
+			for j in np.arange(h.n_part[i]):
 				p_list[cur].mass = np.fromfile(snapshot, 'float32', 1)
 				cur += 1
 
@@ -83,19 +84,20 @@ def read_data(snapshot, h):
 	# Blocks related to the internal energies, densities and smoothing
 	# lengths of the gas particles, in case there is any
 	if(h.n_part[0] > 0):
+		range_ = np.arange(h.n_part[0])
 
 		# First the energies
-		for i in range(h.n_part[0]):
+		for i in range_:
 			p_list[i].U = np.fromfile(snapshot, 'float32', 1)
 		read_dummy(snapshot, 2)
 
 		# Then the densities
-		for i in range(h.n_part[0]):
+		for i in range_:
 			p_list[i].rho = np.fromfile(snapshot, 'float32', 1)
 		read_dummy(snapshot, 2)
 
 		# And the smoothing lengths
-		for i in range(h.n_part[0]):
+		for i in range_:
 			p_list[i].smoothing = np.fromfile(snapshot, 'float32', 1)
 		read_dummy(snapshot, 2)
 	
