@@ -119,12 +119,10 @@ def radial_speed_plot(input_, data, part, aux):
 def main():
 	input_ = sys.argv[1]
 	snapshot = open(input_, 'r')
-	
-	# Functions from snapread.py
-	h = header(snapshot) 
+	h = header(snapshot) # From snapread.py
 	global time
 	time = h.time
-	p_list = read_data(snapshot, h)	
+	p_list = read_data(snapshot, h)	# From snapread.py
 	snapshot.close()
 	data = []
 	for i in p_list:

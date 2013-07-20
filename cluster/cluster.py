@@ -41,14 +41,24 @@ def potential(radius):
 	return -(G * Mh) / (radius + a)
 
 # The distribution function. Could be faster if simplified.
+#def DF(E):
+#	if(E >= 0):
+#		return 0
+#	else:
+#		q = (-(a * E) / (G * Mh))**0.5
+#		return Mh * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
+#			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
+#			   np.pi**3 * a**3 * vg**3 * (1 - q**2)**2.5)
 def DF(E):
 	if(E >= 0):
 		return 0
 	else:
-		q = (-(a * E) / (G * Mh))**0.5
-		return Mh * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
-			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
-			   np.pi**3 * a**3 * vg**3 * (1 - q**2)**2.5)
+		q = (-a * E / G / Mh)**0.5
+		vg = (G * Mh / a)**0.5
+		cte = Mh / (8.0 * 2**0.5 * np.pi**3) / a**3 / vg**3
+		c0 = (1 - q**2)**0.5
+		return cte / c0**5 * 3 * np.arcsin(q) + q * c0 * (1 - 2 * q**2) * (8 * q**4 - 8 * q**2 - 3)
+
 
 def set_positions():
 	
