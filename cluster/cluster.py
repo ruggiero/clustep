@@ -12,7 +12,6 @@ import numpy.random as nprand
 import os
 import sys
 import shutil
-import matplotlib.pyplot as plt
 
 G = 43007.1
 folder = "/tmp/.cluster_temp/"
@@ -41,21 +40,20 @@ def inverse_cumulative(Mc):
 def potential(radius):
 	return -(G * Mh) / (radius + a)
 
-# The distribution function. Poorly written, could be faster if simplified
+# The distribution function. Could be faster if simplified.
 def DF(E):
 	if(E >= 0):
 		return 0
 	else:
 		q = (-(a * E) / (G * Mh))**0.5
-#		return Mh**0.5 * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
-#			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
-#			   np.pi**3 * G**0.5 * a**3 * vg**3 * (1 - q**2)**2.5)
-		return Mh**0.5 * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 * q**2) * (8 * q**4 - 8 * q**2 - 3))/(8 * np.pi**3 * a**2.5 * (2 * G)**0.5 * (1 - q**2)**2.5)
+		return Mh * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
+			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
+			   np.pi**3 * a**3 * vg**3 * (1 - q**2)**2.5)
 
 def set_positions():
 	
 	# This factor Mh 200^2 / 201^2 is for restricting the radius to 200a
-	radii = inverse_cumulative(nprand.sample(N) * (Mh * 40000) / 40401)
+	radii = inverse_cumulative(nprand.sample(N) * ((Mh * 40000) / 40401))
 	thetas = np.arccos(nprand.sample(N) * 2 - 1)
 	phis = 2 * np.pi * nprand.sample(N)
 	xs = radii * np.sin(thetas) * np.cos(phis)
