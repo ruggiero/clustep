@@ -1,6 +1,5 @@
 '''
-
-Execution: ./snapwrite.py FOLDER OUTPUT
+Execution: python snapwrite.py FOLDER OUTPUT
 
 FOLDER: folder containing all the input files, which are:
 
@@ -8,12 +7,10 @@ FOLDER: folder containing all the input files, which are:
     energy.txt density.txt smoothing.txt (in case there is gas)
 
 The columns of the positions and velocities files should be separated with
-tabs, as well as the columns of the header. Among the input files, the one
-corresponding to the header is the only one that accepts comments, which
-should be preceded by a #.
+tabs, as well as the columns of the header. Among the input files, header.txt
+is the only one that accepts comments, which should be preceded by a #.
 
 OUTPUT: name of the file which will be the output snapshot.
-
 '''
 
 import numpy as np
@@ -32,32 +29,33 @@ def process_input(file_):
         if line.find("#") != -1:
             continue
         elif line.find("\n") == 0:
-			continue
+            continue
         else:
-            h_file.append(line)
+            h_file.append(line.split('\t'))
     return h_file
 
 def read_header(folder):
     h_file = process_input(folder + "header.txt")
+    print h_file
     h_data = []
     global n_gas
-    n_gas = int(h_file[0].split('\t')[0])
-    for j in h_file[0].split('\t')[0:6]: # n_part
+    n_gas = int(h_file[0][0])
+    for j in h_file[0][0:6]: # n_part
         h_data.append(int(j))
-    for j in h_file[1].split('\t')[0:6]: # mass
+    for j in h_file[1][0:6]: # mass
         h_data.append(float(j))
-    h_data.append(float(h_file[2].split('\t')[0])) # time
-    h_data.append(float(h_file[3].split('\t')[0])) # redshift
-    h_data.append(int(h_file[4].split('\t')[0])) # flag_sfr
-    h_data.append(int(h_file[5].split('\t')[0])) # flag_feedback
-    for j in h_file[6].split('\t')[0:6]:
+    h_data.append(float(h_file[2][0])) # time
+    h_data.append(float(h_file[3][0])) # redshift
+    h_data.append(int(h_file[4][0])) # flag_sfr
+    h_data.append(int(h_file[5][0])) # flag_feedback
+    for j in h_file[6][0:6]:
         h_data.append(int(j)) # n_part_total
-    h_data.append(int(h_file[7].split('\t')[0])) # flag_coooling
-    h_data.append(int(h_file[8].split('\t')[0])) # num_files
-    h_data.append(float(h_file[9].split('\t')[0])) # box_size
-    h_data.append(float(h_file[10].split('\t')[0])) # omega0
-    h_data.append(float(h_file[11].split('\t')[0])) # omega_lambda
-    h_data.append(float(h_file[12].split('\t')[0])) # hubble_param
+    h_data.append(int(h_file[7][0])) # flag_coooling
+    h_data.append(int(h_file[8][0])) # num_files
+    h_data.append(float(h_file[9][0])) # box_size
+    h_data.append(float(h_file[10][0])) # omega0
+    h_data.append(float(h_file[11][0])) # omega_lambda
+    h_data.append(float(h_file[12][0])) # hubble_param
 
     # blank, present in the header
     for i in np.arange(96):
@@ -83,7 +81,7 @@ def write_block(f, block_data, data_type):
 
 def write_snapshot(folder):
 
-	# Erasing the input file before opening it
+    # Erasing the input file before opening it
     open(output, 'w').close()
     f = file(output, 'a')
     header_data = read_header(folder)
@@ -91,22 +89,16 @@ def write_snapshot(folder):
     f.write(header_data)
     write_dummy(f, 1)
     
-    pos_file = np.fromfile(folder + "position.txt", dtype=float, count=-1,
-                                                                 sep='\t')
-    vel_file = np.fromfile(folder + "velocity.txt", dtype=float, count=-1,
-                                                                 sep='\t')
-    ID_file = np.fromfile(folder + "id.txt", dtype=int, count=-1, sep='\t')
-    mass_file = np.fromfile(folder + "masses.txt", dtype=float, count=-1,
-                                                                sep='\t')
+    pos_file = np.fromfile(folder + "position.txt", sep='\t')
+    vel_file = np.fromfile(folder + "velocity.txt", sep='\t')
+    ID_file = np.fromfile(folder + "id.txt", dtype=int, sep='\t')
+    mass_file = np.fromfile(folder + "masses.txt", sep='\t')
     if(n_gas > 0):
-        U_file = np.fromfile(folder + "energy.txt", dtype=float, count=-1,
-                                                                 sep='\t')
-        rho_file = np.fromfile(folder + "density.txt", dtype=float,
-                                                count=-1, sep='\t')
-    smoothing_file = np.fromfile(folder + "smoothing.txt", dtype=float,
-                                                        count=-1, sep='\t')
+        U_file = np.fromfile(folder + "energy.txt", sep='\t')
+        rho_file = np.fromfile(folder + "density.txt", sep='\t')
+    smoothing_file = np.fromfile(folder + "smoothing.txt", sep='\t')
 
-	# writing
+    # writing
     write_block(f, pos_file, 'f')
     write_block(f, vel_file, 'f')
     write_block(f, ID_file, 'i')
