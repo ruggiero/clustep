@@ -36,7 +36,6 @@ def process_input(file_):
 
 def read_header(folder):
     h_file = process_input(folder + "header.txt")
-    print h_file
     h_data = []
     global n_gas
     n_gas = int(h_file[0][0])

@@ -3,7 +3,6 @@ Use: python cluster.py SNAPSHOT, where SNAPSHOT is the name of the output file
 
 Two files should be present in the script's execution folder: cluster_param.txt
 and header.txt (see examples)
-
 '''
 
 from snapwrite import *
@@ -12,11 +11,10 @@ import numpy.random as nprand
 import os
 import sys
 import shutil
-import rejection as rej
+import rejection as rej # source found in source/rejection.pyx
 
 G = 43007.1
 folder = "/tmp/.cluster_temp/"
-saida = sys.argv[1]
 
 # Extracting the values of the global variables from cluster_param.txt,
 # creating a temporary folder where the input files for snapwrite.py will be
@@ -42,7 +40,7 @@ def potential(radius):
 
 def set_positions():
     
-    # This factor Mh 200^2 / 201^2 is for restricting the radius to 200a
+    # This factor Mh 200^2 / 201^2 is used for restricting the radius to 200a
     radii = inverse_cumulative(nprand.sample(N) * ((Mh * 40000) / 40401))
     thetas = np.arccos(nprand.sample(N) * 2 - 1)
     phis = 2 * np.pi * nprand.sample(N)
@@ -51,7 +49,6 @@ def set_positions():
     zs = radii * np.cos(thetas)
     return np.column_stack((xs, ys, zs)), radii
 
-# The most intensive function in this script
 def set_velocities(radii):
     pots = potential(radii)
     vels = []

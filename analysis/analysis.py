@@ -6,7 +6,7 @@ from bisect import *
 
 a = 200
 Mh = 100000
-N = 10000
+N = 100000
 G = 43007.1
 time = 0.0
 
