@@ -12,6 +12,7 @@ import numpy.random as nprand
 import os
 import sys
 import shutil
+import rejection as rej
 
 G = 43007.1
 folder = "/tmp/.cluster_temp/"
@@ -40,26 +41,6 @@ def inverse_cumulative(Mc):
 def potential(radius):
 	return -(G * Mh) / (radius + a)
 
-# The distribution function. Could be faster if simplified.
-#def DF(E):
-#	if(E >= 0):
-#		return 0
-#	else:
-#		q = (-(a * E) / (G * Mh))**0.5
-#		return Mh * (3 * np.arcsin(q) + q * (1 - q**2)**0.5 * (1 - 2 *
-#			   q**2) * (8 * q**4 - 8 * q**2 - 3)) / (8 * 2**0.5 *
-#			   np.pi**3 * a**3 * vg**3 * (1 - q**2)**2.5)
-def DF(E):
-	if(E >= 0):
-		return 0
-	else:
-		q = (-a * E / G / Mh)**0.5
-		vg = (G * Mh / a)**0.5
-		cte = Mh / (8.0 * 2**0.5 * np.pi**3) / a**3 / vg**3
-		c0 = (1 - q**2)**0.5
-		return cte / c0**5 * 3 * np.arcsin(q) + q * c0 * (1 - 2 * q**2) * (8 * q**4 - 8 * q**2 - 3)
-
-
 def set_positions():
 	
 	# This factor Mh 200^2 / 201^2 is for restricting the radius to 200a
@@ -76,13 +57,13 @@ def set_velocities(radii):
 	pots = potential(radii)
 	vels = []
 	for i in np.arange(len(pots)):
-		fmax = DF(pots[i])
+		fmax = rej.DF(pots[i], G, Mh, a)
 
 		# random coordinates in the rectangle (pots[i], 0) x (0, fmax)
 		# will be rejected if y > DF(x), as the rejection algorithm requires
 		x = pots[i] - (nprand.rand() * pots[i])
 		y = nprand.rand() * fmax
-		while(y > DF(x)):
+		while(y > rej.DF(x, G, Mh, a)):
 			x = pots[i] - (nprand.rand() * pots[i])
 			y = nprand.rand() * fmax
 		vels.append((2 * (x - pots[i]))**0.5)
