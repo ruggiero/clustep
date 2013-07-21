@@ -17,9 +17,9 @@ def hernquist_density(r):
         return (Mh * a) / (2 * np.pi * r * (r + a)**3)
 
 def radial_speed_squared(r):
-    return ((G * Mh) / (12 * a)) * ((12 * r * (r + a)**3 *\
-                np.log((r + a) / r)) / a**4 - (r / (r + a)) * (25 + 52 * r / a\
-                + 42 * (r / a)**2 + 12 * (r / a)**3))
+    return ((G * Mh) / (12 * a)) * ((12 * r * (r + a)**3 *
+            np.log((r + a) / r)) / a**4 - (r / (r + a)) * (25 + 52 * r / a +
+            42 * (r / a)**2 + 12 * (r / a)**3))
 
 # Given a data vector, in which each element represents a different particle
 # by a list of the form [radius, radial_speed^2], ordered according to the
@@ -37,7 +37,7 @@ def log_partition(data, factor):
         right_index = left_index + bisect_left(radii[left_index:], right_limit)
         limits.append(right_index)
         auxiliary.append([right_index - left_index, (right_limit + left_limit) /
-            2])
+                          2])
         left_limit = right_limit
         left_index = right_index
         right_limit *= factor
@@ -53,7 +53,7 @@ def density_distribution(data, partition, aux):
         middle_radius = aux[j][1]
         if(count > 0):
             density = 10**10 * (3.0 * count * Mh) / (4 * N * np.pi *
-                (data[right][0]**3 - data[left][0]**3))
+                      (data[right][0]**3 - data[left][0]**3))
             distribution.append([middle_radius, density])
         else:
             distribution.append([middle_radius, 0])
@@ -78,8 +78,7 @@ def radial_speed_distribution(data, partition, aux):
 
 def density_plot(input_, data, part, aux):
     dist = density_distribution(data, part, aux)
-    x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]),\
-        num=1000)
+    x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]), num=1000)
     p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
     p2, = plt.plot(x_axis, [10**10 * hernquist_density(i) for i in x_axis])
     plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
@@ -96,8 +95,7 @@ def density_plot(input_, data, part, aux):
 
 def radial_speed_plot(input_, data, part, aux):
     dist = radial_speed_distribution(data, part, aux)
-    x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]),\
-        num=1000)
+    x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]), num=1000)
     formatter = FuncFormatter(lambda x, pos : "%1.2f" % (x / 10**6))
     ax = plt.subplot(111)
     ax.yaxis.set_major_formatter(formatter)
