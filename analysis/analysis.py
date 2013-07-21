@@ -17,9 +17,10 @@ def hernquist_density(r):
         return (Mh * a) / (2 * np.pi * r * (r + a)**3)
 
 def radial_speed_squared(r):
-    return ((G * Mh) / (12 * a)) * ((12 * r * (r + a)**3 *
-            np.log((r + a) / r)) / a**4 - (r / (r + a)) * (25 + 52 * r / a +
-            42 * (r / a)**2 + 12 * (r / a)**3))
+	cte = (G * Mh) / (12 * a)
+	t1 = ((12 * r * (r + a)**3) / a**4) * np.log((r + a) / r)
+	t2 = -r/(r + a) * (25 + 52 * r / a + 42 * (r / a)**2 + 12 * (r / a)**3)
+	return cte * (t1 + t2)
 
 # Given a data vector, in which each element represents a different particle
 # by a list of the form [radius, radial_speed^2], ordered according to the

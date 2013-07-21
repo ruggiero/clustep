@@ -29,7 +29,7 @@ def init():
     if not os.path.exists(folder):
         os.makedirs(folder)
     shutil.copyfile("header.txt", folder + "header.txt")
-    vars_ = process_input("cluster_param.txt")
+    vars_ = process_input("cluster_param.txt") # From snapwrite.py
     Mh, a, N = float(vars_[0][0]), float(vars_[1][0]), float(vars_[2][0])
 
 def inverse_cumulative(Mc):
