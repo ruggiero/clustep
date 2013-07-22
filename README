@@ -16,3 +16,16 @@ that, just cd to /cluster and type 'make'. A new file, named rejection.so, will
 be created, and then cluster.py will be ready for execution.
 
 ===============================================================
+
+Syntax:
+
+* To create an initial conditions snapshot with cluster.py:
+    cd cluster/
+    python cluster.py [FILE]
+
+* To create density and squared radial speed distributions plots for a given
+  snapshot (the output will be the creation of two images in the file's folder):
+    cd analysis/
+    python analysis.py [FILE]
+
+===============================================================
