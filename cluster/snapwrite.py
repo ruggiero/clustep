@@ -10,7 +10,7 @@ The columns of the positions and velocities files should be separated with
 tabs, as well as the columns of the header. Among the input files, header.txt
 is the only one that accepts comments, which should be preceded by a #.
 
-OUTPUT: name of the file which will be the output snapshot.
+OUTPUT: name of the file that will be the output snapshot.
 '''
 
 import numpy as np
