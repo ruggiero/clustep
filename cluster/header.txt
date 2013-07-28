@@ -1,15 +1,15 @@
-# The number of partciles in our file, listed from type 0 to 5:
-0	100000	0	0	0	0	
+# The number of particles in the file, listed from type 0 to 5
+0	10000	0	0	0	0	
 
 # Mass array. Either gives the mass of each particle type or 0.0
 # if defined on a per/particle basis.
-0.000000	0.000000	0.000000	0.000000	0.000000	0.000000	
+0.0	0.0	0.0	0.0	0.0	0.0	
 
 # Time. For initial conditions this field has no meaning.
-0.000000
+0.0
 
 # Redshift
-0.000000
+0.0
 
 # Star formation rate flag
 0
@@ -19,7 +19,7 @@
 
 # The total number of particles across all files for this simulation,
 # for the 6 types
-0	100000	0	0	0	0	
+0	10000	0	0	0	0	
 
 # Cooling flag
 0
@@ -28,16 +28,16 @@
 1
 
 # The box size
-0.000000
+0.0
 
 # Omega_0
-0.000000
+0.0
 
 # Omega_Lambda
-0.000000
+0.0
 
 # Hubble Parameter
-1.000000
+1.0
 
 # Star formation time flag
 0

@@ -16,6 +16,7 @@ OUTPUT: name of the file that will be the output snapshot.
 import numpy as np
 import struct
 import sys
+import os
 
 n_gas = 0
 output = sys.argv[1]
@@ -35,7 +36,7 @@ def process_input(file_):
     return h_file
 
 def read_header(folder):
-    h_file = process_input(folder + "header.txt")
+    h_file = process_input(folder + "/header.txt")
     h_data = []
     global n_gas
     n_gas = int(h_file[0][0])
@@ -59,9 +60,9 @@ def read_header(folder):
     # blank, present in the header
     for i in np.arange(96):
         h_data.append('\0')
-    s = struct.Struct(' iiiiii dddddd d d i i iiiiii i i dddd cccccccccccc\
-                        cccccccccccccccccccccccccccccccccccccccccccccccccc\
-                        cccccccccccccccccccccccccccccccccc')
+    s = struct.Struct('iiiiii dddddd d d i i iiiiii i i dddd cccccccccccc\
+                       cccccccccccccccccccccccccccccccccccccccccccccccccc\
+                       cccccccccccccccccccccccccccccccccc')
     packed_data = s.pack(*h_data)
     return packed_data
 
@@ -72,38 +73,58 @@ def write_dummy(f, n_dummies):
     for i in np.arange(n_dummies):
         f.write(d)
 
-def write_block(f, block_data, data_type):
+def write_block(f, block_data, data_type, block_name):
     write_dummy(f, 1)
-    fmt = data_type * len(block_data)
-    f.write(struct.pack(fmt, *block_data))
+    f.write(struct.pack('c' * 4, *block_name))
+    write_dummy(f, 3)
+    if(block_name == 'HEAD'): # header_data comes packed
+        f.write(block_data) 
+    else:
+        fmt = data_type * len(block_data)
+        f.write(struct.pack(fmt, *block_data))
     write_dummy(f, 1)
 
-def write_snapshot(folder):
+def write_snapshot(folder=None, from_text=True, data_list=None):
+    if(from_text and not folder):
+        print ("error: can't call write_snapshot with from_text=True"
+               "and without an input files folder.")
+    if(not from_text):
+        folder = os.getcwd()
 
     # Erasing the input file before opening it
     open(output, 'w').close()
     f = file(output, 'a')
     header_data = read_header(folder)
-    write_dummy(f, 1)
-    f.write(header_data)
-    write_dummy(f, 1)
-    
-    pos_file = np.fromfile(folder + "position.txt", sep='\t')
-    vel_file = np.fromfile(folder + "velocity.txt", sep='\t')
-    ID_file = np.fromfile(folder + "id.txt", dtype=int, sep='\t')
-    mass_file = np.fromfile(folder + "masses.txt", sep='\t')
-    if(n_gas > 0):
-        U_file = np.fromfile(folder + "energy.txt", sep='\t')
-        rho_file = np.fromfile(folder + "density.txt", sep='\t')
-    smoothing_file = np.fromfile(folder + "smoothing.txt", sep='\t')
+    if(from_text):
+        pos_data = np.fromfile(folder + "position.txt", sep='\t')
+        vel_data = np.fromfile(folder + "velocity.txt", sep='\t')
+        ID_data = np.fromfile(folder + "id.txt", dtype=int, sep='\t')
+        mass_data = np.fromfile(folder + "masses.txt", sep='\t')
+        if(n_gas > 0):
+            U_data = np.fromfile(folder + "energy.txt", sep='\t')
+            rho_data = np.fromfile(folder + "density.txt", sep='\t')
+        smoothing_data = np.fromfile(folder + "smoothing.txt", sep='\t')
+    else:
+        pos_data = data_list[0]
+        vel_data = data_list[1]
+        ID_data = data_list[2]
+        mass_data = data_list[3]
+        if(n_gas > 0):
+            U_data = data_list[4]
+            rho_data = data_list[5]
+            index = 6
+        else:
+            index = 4
+        smoothing_data = data_list[index]
 
     # writing
-    write_block(f, pos_file, 'f')
-    write_block(f, vel_file, 'f')
-    write_block(f, ID_file, 'i')
-    write_block(f, mass_file, 'f')
+    write_block(f, header_data, None, 'HEAD')
+    write_block(f, pos_data, 'f', 'POS ')
+    write_block(f, vel_data, 'f', 'VEL ')
+    write_block(f, ID_data, 'i', 'ID  ')
+    write_block(f, mass_data, 'f', 'MASS')
     if(n_gas > 0):
-        write_block(f, U_file, 'f')
-        write_block(f, rho_file, 'f')
-        write_block(f, smoothing_file, 'f')
+        write_block(f, U_data, 'f', 'U   ')
+        write_block(f, rho_data, 'f', 'RHO ')
+        write_block(f, smoothing_data, 'f', 'HSML')
     f.close()

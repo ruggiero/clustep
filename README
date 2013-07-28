@@ -1,9 +1,10 @@
 ===============================================================
 
-Required libraries (and the name of the packages in Ubuntu):
+Required libraries (and the names of the packages in Ubuntu):
 
 NumPy (python-numpy)
 Cython (cython)
+python-dev
 Matplotlib (python-matplotlib)
 
 ===============================================================

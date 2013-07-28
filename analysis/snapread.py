@@ -8,7 +8,7 @@ import numpy as np
 # For reading and storing the header
 class header:
     def __init__(self, snapshot):
-        read_dummy(snapshot, 1)
+        initialize_block(snapshot)
         self.n_part = np.fromfile(snapshot, 'int32', 6)
         self.mass = np.fromfile(snapshot, 'float64', 6)
         self.time = np.fromfile(snapshot, 'float64', 1)
@@ -39,28 +39,36 @@ def read_dummy(snapshot, n_dummies):
     for i in np.arange(n_dummies):
         dummy = np.fromfile(snapshot, 'int32', 1)
 
+def initialize_block(snapshot):
+    read_dummy(snapshot, 1)
+    block_ID = np.fromfile(snapshot, 'int8', 4)
+    read_dummy(snapshot, 3)
+    return ''.join([chr(i) for i in block_ID])
+    
 def read_data(snapshot, h):
     p_list = []
     n_part = sum(h.n_part)
-    read_dummy(snapshot, 1)
     range_ = np.arange(n_part)
-
+    
     # positions
+    initialize_block(snapshot)
     for i in range_:
         p = particle()
         p.pos = np.fromfile(snapshot, 'float32', 3)
         p_list.append(p)
-    read_dummy(snapshot, 2)
+    read_dummy(snapshot, 1)
     
     # velocities
+    initialize_block(snapshot)
     for i in range_:
         p_list[i].vel = np.fromfile(snapshot, 'float32', 3)
-    read_dummy(snapshot, 2)
+    read_dummy(snapshot, 1)
 
     # IDs
+    initialize_block(snapshot)
     for i in range_:
         p_list[i].ID = np.fromfile(snapshot, 'int32', 1)
-    read_dummy(snapshot, 2)
+    read_dummy(snapshot, 1)
 
     # Variable masses, which are read in case the mass of the
     # particle of type 'i' is declared as 0, in the header
@@ -71,14 +79,16 @@ def read_data(snapshot, h):
             cur += h.n_part[i]
             continue
         else:
-            read_something = 1
+            if(read_something == 0):
+                read_something = 1
+                initialize_block(snapshot)
             for j in np.arange(h.n_part[i]):
                 p_list[cur].mass = np.fromfile(snapshot, 'float32', 1)
                 cur += 1
 
     # The variable masses block might not exist
     if(read_something):
-        read_dummy(snapshot, 2)
+        read_dummy(snapshot, 1)
     
     # Blocks related to the internal energies, densities and smoothing
     # lengths of the gas particles, in case there is any
@@ -86,19 +96,22 @@ def read_data(snapshot, h):
         range_ = np.arange(h.n_part[0])
 
         # First the energies
+        initialize_block(snapshot)
         for i in range_:
             p_list[i].U = np.fromfile(snapshot, 'float32', 1)
-        read_dummy(snapshot, 2)
+        read_dummy(snapshot, 1)
 
         # Then the densities
+        initialize_block(snapshot)
         for i in range_:
             p_list[i].rho = np.fromfile(snapshot, 'float32', 1)
-        read_dummy(snapshot, 2)
+        read_dummy(snapshot, 1)
 
         # And the smoothing lengths
+        initialize_block(snapshot)
         for i in range_:
             p_list[i].smoothing = np.fromfile(snapshot, 'float32', 1)
-        read_dummy(snapshot, 2)
+        read_dummy(snapshot, 1)
     
     # There are some blocks to be implemented...
     chunk = snapshot.read()

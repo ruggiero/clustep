@@ -1,12 +1,14 @@
 from snapread import *
 import numpy as np
+import matplotlib
+matplotlib.use('Agg') # to be able to plot under an SSH session
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from bisect import *
 
 a = 200
 Mh = 100000
-N = 100000
+N = 10000
 G = 43007.1
 time = 0.0
 

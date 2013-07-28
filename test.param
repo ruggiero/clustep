@@ -23,8 +23,8 @@ ResubmitCommand   my-scriptfile
 % Code options
 
 
-ICFormat                 1
-SnapFormat               1
+ICFormat                 2
+SnapFormat               2
 ComovingIntegrationOn    0
 
 TypeOfTimestepCriterion  0
