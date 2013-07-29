@@ -6,18 +6,18 @@ and header.txt (see examples)
 '''
 
 from snapwrite import *
+import rejection as rej # source found in source/rejection.pyx
 import numpy as np
 import numpy.random as nprand
 import os
 import sys
-import rejection as rej # source found in source/rejection.pyx
 
 # Extracting the values of the global variables from cluster_param.txt
 def init():
     global Mh, a, N
     if not (os.path.isfile("header.txt") and os.path.isfile(
             "cluster_param.txt")):
-        print ("The following parameter files are required: header.txt and"
+        print ("The following parameter files are required: header.txt and\n"
                "cluster_param.txt. Please check.")
         sys.exit(0)
     vars_ = process_input("cluster_param.txt") # From snapwrite.py
@@ -36,9 +36,13 @@ def set_positions():
     ys = radii * np.sin(thetas) * np.sin(phis)
     zs = radii * np.cos(thetas)
     coords = np.column_stack((xs, ys, zs))
+
+    # Older NumPy versions freak out without this line
     coords = np.array(coords, order='C')
-    coords.shape = (1, -1)
-    return coords[0], radii
+    coords.shape = (1, -1) # linearizing the array
+
+    # coords is of the form [[a, b, c, ...]]; so coords[0] is the relevant part 
+    return coords[0], radii 
 
 def set_velocities(radii):
     vels = []
@@ -46,7 +50,7 @@ def set_velocities(radii):
         vels.append(rej.set_velocity(radii[i], Mh, a))
         if(i % 1000 == 0): 
             print 'set velocity', i, 'of', N
-    vels = np.array(vels)
+    vels = np.array(vels, order='C')
     vels.shape = (1, -1)
     return vels[0]
 
@@ -56,7 +60,8 @@ def write_input_file(coords, vels):
     masses = np.empty(length)
     masses.fill(float(Mh) / N)
     smooths = np.zeros(length)
-    write_snapshot(from_text=False, data_list=[coords, vels, ids, masses, smooths])
+    write_snapshot(from_text=False, data_list=[coords, vels, ids, masses,
+                                               smooths])
 
 def main():
     init()

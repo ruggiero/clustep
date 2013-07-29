@@ -1,5 +1,5 @@
 '''
-Execution: ./snapread.py SNAPSHOT
+Standalone execution: ./snapread.py SNAPSHOT
 '''
 
 import sys

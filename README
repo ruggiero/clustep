@@ -11,22 +11,29 @@ Matplotlib (python-matplotlib)
 
 Installation:
 
-All the scripts can be executed without installation or compilation, except for
-cluster.py, which uses a custom Cython library that has to be compiled. For
-that, just cd to /cluster and type 'make'. A new file, named rejection.so, will
-be created, and then cluster.py will be ready for execution.
+All the scripts can be executed without installation or compilation,
+except for cluster.py, which uses a custom Cython library that has to
+be compiled. For that, just cd to /cluster and type 'make'. A new file,
+named rejection.so, will be created, and then cluster.py will be ready
+for execution.
 
 ===============================================================
 
 Syntax:
 
 * To create an initial conditions snapshot with cluster.py:
-    cd cluster/
-    python cluster.py [FILE]
+    cd cluster/ python cluster.py [FILE]
 
-* To create density and squared radial speed distributions plots for a given
-  snapshot (the output will be the creation of two images in the file's folder):
-    cd analysis/
+* To create density and average squared radial speed distributions plots
+  for a given snapshot (the output will be the creation of two images
+  in the file's folder):
     python analysis.py [FILE]
+
+===============================================================
+
+Author:
+    Rafael Ruggiero
+    Undergraduate student at Universidade de São Paulo (USP), Brazil
+    Contact: bluewhale [at] cecm.usp.br
 
 ===============================================================

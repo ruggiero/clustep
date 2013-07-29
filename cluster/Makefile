@@ -2,6 +2,6 @@ COMPILER=python
 FLAGS=source/setup.py build_ext --inplace
 main:
 	$(COMPILER) $(FLAGS)
-	rm -r build
+	if [ -d build ]; then rm -r build; fi
 clean:
 	rm rejection.so

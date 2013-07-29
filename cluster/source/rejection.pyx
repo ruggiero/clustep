@@ -18,19 +18,17 @@ cdef double DF(double E, double Mh, double a):
                (8 * pow(q, 4) - 8 * q * q - 3)) / pow(1 - q * q, 2.5)
 
 def set_velocity(double radius, double Mh, double a):
-    cdef double fmax, y, pot
-    cdef double vx, vy, vz, v2
-    cdef double vesc2, vesc
-    pot = potential(radius, Mh, a)
-    fmax = DF(pot, Mh, a)
-    vesc2 = -2.0 * pot
-    vesc = sqrt(vesc2)
+    cdef double fmax, y, phi
+    cdef double vx, vy, vz, v2, vesc
+    phi = potential(radius, Mh, a)
+    fmax = DF(phi, Mh, a)
+    vesc = sqrt(-2.0 * phi)
     while(True):
         vx = vesc * (nprand.rand() * 2 - 1)
         vy = vesc * (nprand.rand() * 2 - 1)
         vz = vesc * (nprand.rand() * 2 - 1)
         v2 = vx*vx + vy*vy + vz*vz
         y = fmax * nprand.rand()
-        if(y < DF(pot + 0.5 * v2, Mh, a)):
+        if(y < DF(phi + 0.5 * v2, Mh, a)):
             break
     return [vx, vy, vz]

@@ -1,11 +1,11 @@
 # The number of particles in the file, listed from type 0 to 5
-0	10000	0	0	0	0	
+0	1000000	0	0	0	0	
 
-# Mass array. Either gives the mass of each particle type or 0.0
-# if defined on a per/particle basis.
+# Mass array. Either gives the mass of each particle type or 0.0,
+# if defined individually for each particle
 0.0	0.0	0.0	0.0	0.0	0.0	
 
-# Time. For initial conditions this field has no meaning.
+# Time - has no meaning for initial conditions
 0.0
 
 # Redshift
@@ -17,14 +17,14 @@
 # Feedback flag
 0
 
-# The total number of particles across all files for this simulation,
-# for the 6 types
-0	10000	0	0	0	0	
+# The total number of particles across all the files for the simulation,
+# for each of the 6 types
+0	1000000	0	0	0	0	
 
 # Cooling flag
 0
 
-# Total number of files is this simulation
+# Total number of files
 1
 
 # The box size
@@ -49,5 +49,5 @@
 # of the total particle numbers
 0	0	0	0	0	0	
 
-#Is entropy used intstead of internal energy?
+# Is entropy used intstead of internal energy?
 0

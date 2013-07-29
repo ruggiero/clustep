@@ -1,14 +1,18 @@
 '''
-Execution: python snapwrite.py FOLDER OUTPUT
+This script can be executed independenly, or it can be imported somewhere else.
+In the first case, just run the following:
+
+python snapwrite.py FOLDER OUTPUT
 
 FOLDER: folder containing all the input files, which are:
 
     header.txt position.txt velocity.txt id.txt masses.txt (always)
     energy.txt density.txt smoothing.txt (in case there is gas)
 
-The columns of the positions and velocities files should be separated with
-tabs, as well as the columns of the header. Among the input files, header.txt
-is the only one that accepts comments, which should be preceded by a #.
+Note that the columns of the positions and velocities files should be
+separated with tabs, as well as the columns of the header. Among the input
+files, header.txt is the only one that accepts comments, which should be
+preceded by a #.
 
 OUTPUT: name of the file that will be the output snapshot.
 '''
@@ -86,7 +90,7 @@ def write_block(f, block_data, data_type, block_name):
 
 def write_snapshot(folder=None, from_text=True, data_list=None):
     if(from_text and not folder):
-        print ("error: can't call write_snapshot with from_text=True"
+        print ("error: can't call write_snapshot with from_text=True\n"
                "and without an input files folder.")
     if(not from_text):
         folder = os.getcwd()
