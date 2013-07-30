@@ -25,9 +25,9 @@ Syntax:
     cd cluster/
     python cluster.py [FILE]
 
-* To create density and average squared radial speed distributions plots
-  for a given snapshot (the output will be the creation of two images
-  in the file's folder):
+* To create density and average squared radial velocity distributions
+  plots for a given snapshot (the output will be the creation of two
+  images in the file's folder):
     python analysis.py [FILE]
 
 ===============================================================
