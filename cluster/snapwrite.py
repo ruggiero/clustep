@@ -70,25 +70,31 @@ def read_header(folder):
     packed_data = s.pack(*h_data)
     return packed_data
 
-def write_dummy(f, n_dummies):
-    dummy = [256]
-    s = struct.Struct('i')
-    d = s.pack(*dummy)
-    for i in np.arange(n_dummies):
+def write_dummy(f, values_list):
+    for i in values_list:
+        dummy = [i]
+        s = struct.Struct('i')
+        d = s.pack(*dummy)
         f.write(d)
 
-def write_block(f, block_data, data_type, block_name):
-    write_dummy(f, 1)
+def write_block(f, block_data, data_type, block_name, N):
+    write_dummy(f, [8])
     f.write(struct.pack('c' * 4, *block_name))
-    write_dummy(f, 3)
-    if(block_name == 'HEAD'): # header_data comes packed
-        f.write(block_data) 
+    if(block_name == 'HEAD'):
+        nbytes = 256
     else:
         fmt = data_type * len(block_data)
+        nbytes = N * 4
+        if(block_name in ['VEL ', 'POS ']):
+            nbytes *= 3 
+    write_dummy(f, [nbytes + 8, 8, nbytes]) 
+    if(block_name == 'HEAD'):
+        f.write(block_data) 
+    else:
         f.write(struct.pack(fmt, *block_data))
-    write_dummy(f, 1)
+    write_dummy(f, [nbytes])
 
-def write_snapshot(folder=None, from_text=True, data_list=None):
+def write_snapshot(N, folder=None, from_text=True, data_list=None):
     if(from_text and not folder):
         print ("error: can't call write_snapshot with from_text=True\n"
                "and without an input files folder.")
@@ -122,13 +128,13 @@ def write_snapshot(folder=None, from_text=True, data_list=None):
         smoothing_data = data_list[index]
 
     # writing
-    write_block(f, header_data, None, 'HEAD')
-    write_block(f, pos_data, 'f', 'POS ')
-    write_block(f, vel_data, 'f', 'VEL ')
-    write_block(f, ID_data, 'i', 'ID  ')
-    write_block(f, mass_data, 'f', 'MASS')
+    write_block(f, header_data, None, 'HEAD', N)
+    write_block(f, pos_data, 'f', 'POS ', N)
+    write_block(f, vel_data, 'f', 'VEL ', N)
+    write_block(f, ID_data, 'i', 'ID  ', N)
+    write_block(f, mass_data, 'f', 'MASS', N)
     if(n_gas > 0):
-        write_block(f, U_data, 'f', 'U   ')
-        write_block(f, rho_data, 'f', 'RHO ')
-        write_block(f, smoothing_data, 'f', 'HSML')
+        write_block(f, U_data, 'f', 'U   ', N)
+        write_block(f, rho_data, 'f', 'RHO ', N)
+        write_block(f, smoothing_data, 'f', 'HSML', N)
     f.close()

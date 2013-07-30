@@ -60,8 +60,8 @@ def write_input_file(coords, vels):
     masses = np.empty(length)
     masses.fill(float(Mh) / N)
     smooths = np.zeros(length)
-    write_snapshot(from_text=False, data_list=[coords, vels, ids, masses,
-                                               smooths])
+    write_snapshot(N, from_text=False, data_list=[coords, vels, ids, masses,
+                                                  smooths])
 
 def main():
     init()

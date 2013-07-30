@@ -1,5 +1,5 @@
 # The number of particles in the file, listed from type 0 to 5
-0	1000000	0	0	0	0	
+0	100000	0	0	0	0	
 
 # Mass array. Either gives the mass of each particle type or 0.0,
 # if defined individually for each particle
@@ -19,7 +19,7 @@
 
 # The total number of particles across all the files for the simulation,
 # for each of the 6 types
-0	1000000	0	0	0	0	
+0	100000	0	0	0	0	
 
 # Cooling flag
 0
