@@ -1,4 +1,5 @@
-from snapread import *
+from snapread import * # snapread.py
+import centers # centers.py
 import numpy as np
 import matplotlib
 matplotlib.use('Agg') # to be able to plot under an SSH session
@@ -122,6 +123,7 @@ def radial_velocity_plot(input_, data, part, aux):
 
 def main():
     global time, N
+    print "reading..."
     input_ = sys.argv[1]
     snapshot = open(input_, 'r')
     h = header(snapshot) # From snapread.py
@@ -130,15 +132,17 @@ def main():
     p_list = read_data(snapshot, h) # From snapread.py
     snapshot.close()
     data = []
+    COD = centers.COD(p_list)
     for i in p_list:
+        i.pos -= COD
         r = np.linalg.norm(i.pos)
         vr = np.dot(i.pos, i.vel) / r
         data.append([r, vr**2])
     del(p_list)
     data = sorted(data)
     part, aux = log_partition(data, 1.3)
-    radial_velocity_plot(input_, data, part, aux)
     density_plot(input_, data, part, aux)
+    radial_velocity_plot(input_, data, part, aux)
 
 if __name__ == '__main__':
     main()
