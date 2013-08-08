@@ -24,6 +24,8 @@ def possible_sums(step):
     return [np.array((step, 0, 0)), np.array((0, step, 0)),
             np.array((0, 0, step))]
 
+# Previous knowledge on the distance between the COM and the CED
+# is necessary for estimating good values for the step
 def COD(p_list):
     COM = sum(p.pos for p in p_list) / len(p_list)
     print "the COM is (%f, %f, %f)" % (COM[0], COM[1], COM[2])
@@ -34,7 +36,7 @@ def COD(p_list):
     new_guess = COM
     close_radii = [] # distant particles won't be considered
     for p in p_list:
-        if(np.linalg.norm(p.pos - COM) < 80):
+        if(np.linalg.norm(p.pos - COM) < 1.25 * 64): # this is arbitrary
             close_radii.append(p.pos)
     while(step >= 4):
         print "finding COD... step = %d kpc" % step

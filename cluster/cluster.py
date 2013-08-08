@@ -5,12 +5,16 @@ Two files should be present in the script's execution folder: cluster_param.txt
 and header.txt (see examples)
 '''
 
-from snapwrite import *
-import rejection as rej # source found in source/rejection.pyx
+from snapwrite import * 
+import optimized_functions as opt
 import numpy as np
 import numpy.random as nprand
+from scipy import integrate
 import os
 import sys
+from bisect import *
+
+G = 43007.1
 
 # Extracting the values of the global variables from cluster_param.txt
 def init():
@@ -25,6 +29,39 @@ def init():
 
 def inverse_cumulative(Mc):
     return (a * ((Mc * Mh)**0.5 + Mc)) / (Mh - Mc)
+
+def potential(radius, Mh, a):
+    return -(G * Mh) / (radius + a)
+
+def DF_numerical(E, Mh, a):
+    epsilon = -E
+    if(epsilon <= 0):
+        return 0
+    else:
+        cte = a / (8**0.5 * (np.pi * G)**3 * Mh**2)
+        integral = integrate.quad(opt.aux, 0, epsilon, args = (Mh, a, epsilon), full_output=-1)
+        return cte * integral[0]
+
+def interpolate(E, DF_tabulated):
+    index = bisect_left(DF_tabulated[:, 0], E)
+    if(index >= 999):
+        return 0
+    else:
+        delta_y = DF_tabulated[index + 1][1] - DF_tabulated[index][1]
+        delta_x = DF_tabulated[index + 1][0] - DF_tabulated[index][0]
+        y = DF_tabulated[index][1] + delta_y / delta_x * (DF_tabulated[index][0] - E)
+        return y
+
+def sample_velocity(radius, Mh, a, DF_tabulated):
+    phi = potential(radius, Mh, a)
+    fmax = interpolate(phi, DF_tabulated)
+    vesc = (-2.0 * phi)**0.5
+    while(True):
+        vx, vy, vz, v2 = opt.random_velocity(vesc)
+        y = fmax * nprand.rand()
+        if(y < interpolate(phi + 0.5 * v2, DF_tabulated)):
+            break
+    return [vx, vy, vz]
 
 def set_positions():
     
@@ -41,13 +78,18 @@ def set_positions():
     coords = np.array(coords, order='C')
     coords.shape = (1, -1) # linearizing the array
 
-    # coords is of the form [[a, b, c, ...]]; so coords[0] is the relevant part 
+    # coords is in the form [[a, b, c, ...]]; so coords[0] is the relevant part 
     return coords[0], radii 
 
 def set_velocities(radii):
     vels = []
+    DF_tabulated = []
+    for i in np.linspace(-(G * Mh) / a, 0, 1000):
+        DF_tabulated.append([i, DF_numerical(i, Mh, a)])
+    DF_tabulated = np.array(DF_tabulated)
+    print "done with tabulation"
     for i in np.arange(len(radii)):
-        vels.append(rej.set_velocity(radii[i], Mh, a))
+        vels.append(sample_velocity(radii[i], Mh, a, DF_tabulated))
         if(i % 1000 == 0): 
             print 'set velocity', i, 'of', N
     vels = np.array(vels, order='C')
