@@ -129,6 +129,7 @@ def main():
     h = header(snapshot) # From snapread.py
     time = h.time
     N = sum(h.n_part_total)
+    print N
     p_list = read_data(snapshot, h) # From snapread.py
     snapshot.close()
     data = []

@@ -3,6 +3,7 @@ import numpy.random as nprand
 
 cdef double G = 43007.1
 
+'''
 # The integrand in the integral for the DF
 def aux(double psi, double Mh, double a, double epsilon):
     cdef double n1, n2, n3, d1
@@ -11,6 +12,14 @@ def aux(double psi, double Mh, double a, double epsilon):
     n3 = 3 * pow(a * psi, 2)
     d1 = pow(G * Mh - a * psi, 3) 
     return (pow(psi, 2) * (n1 - n2 + n3)) / (d1 * sqrt(epsilon - psi))
+'''
+
+# The integrand in the integral for the DF
+def aux(double r, double M, double a, double epsilon):
+    cdef double n, d
+    n = 6 * r * r + 4 * a * r + a * a
+    d = pow(r * (r + a), 3) * sqrt(epsilon - (G * M) / (r + a))
+    return n / d
 
 def random_velocity(double vesc):
     cdef double vx, vy, vz, v2, vesc2

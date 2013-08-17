@@ -15,6 +15,7 @@ import sys
 from bisect import *
 
 G = 43007.1
+N_INTER = 1000
 
 # Extracting the values of the global variables from cluster_param.txt
 def init():
@@ -38,18 +39,24 @@ def DF_numerical(E, Mh, a):
     if(epsilon <= 0):
         return 0
     else:
-        cte = a / (8**0.5 * (np.pi * G)**3 * Mh**2)
-        integral = integrate.quad(opt.aux, 0, epsilon, args = (Mh, a, epsilon), full_output=-1)
+        limit1 = (G * Mh) / epsilon - a
+        cte = a / (np.pi**3 * G * 8**0.5)
+        integral = integrate.quad(opt.aux, limit1, np.inf,
+                                  args = (Mh, a, epsilon), full_output=-1)
+        print E, integral[0], integral[1]
         return cte * integral[0]
 
 def interpolate(E, DF_tabulated):
     index = bisect_left(DF_tabulated[:, 0], E)
-    if(index >= 999):
-        return 0
+    if(index >= N_INTER - 1):
+        return 0.0
     else:
-        delta_y = DF_tabulated[index + 1][1] - DF_tabulated[index][1]
-        delta_x = DF_tabulated[index + 1][0] - DF_tabulated[index][0]
-        y = DF_tabulated[index][1] + delta_y / delta_x * (DF_tabulated[index][0] - E)
+        if(index == 0):
+            index += 1
+        dy = DF_tabulated[index][1] - DF_tabulated[index - 1][1]
+        dx = DF_tabulated[index][0] - DF_tabulated[index - 1][0]
+        y = DF_tabulated[index - 1][1] + dy / dx *\
+            (DF_tabulated[index - 1][0] - E)
         return y
 
 def sample_velocity(radius, Mh, a, DF_tabulated):
@@ -84,7 +91,7 @@ def set_positions():
 def set_velocities(radii):
     vels = []
     DF_tabulated = []
-    for i in np.linspace(-(G * Mh) / a, 0, 1000):
+    for i in np.linspace(-(G * Mh) / a, 0, N_INTER):
         DF_tabulated.append([i, DF_numerical(i, Mh, a)])
     DF_tabulated = np.array(DF_tabulated)
     print "done with tabulation"
