@@ -21,14 +21,19 @@ for execution.
 
 Syntax:
 
-* To create an initial conditions snapshot with cluster.py:
+* To create an initial conditions galaxy cluster halo snapshot with
+  cluster.py, contaning both dark matter and gas:
     cd cluster/
-    python cluster.py [FILE]
+    python cluster.py --gas [FILE]
+
+* To do the same, but with dark matter only (no gas):
+    cd cluster/
+    python cluster.py --dm [FILE]
 
 * To create density and average squared radial velocity distributions
   plots for a given snapshot (the output will be the creation of two
   images in the file's folder):
-    python analysis.py [FILE]
+    python profiles.py [FILE]
 
 ===============================================================
 

@@ -1,25 +1,48 @@
 from libc.math cimport asin, sqrt, pow, M_PI
+
 import numpy.random as nprand
+
 
 cdef double G = 43007.1
 
-'''
-# The integrand in the integral for the DF
-def aux(double psi, double Mh, double a, double epsilon):
-    cdef double n1, n2, n3, d1
-    n1 = 6 * pow(G * Mh, 2) 
-    n2 = 8 * a * psi * G * Mh
-    n3 = 3 * pow(a * psi, 2)
-    d1 = pow(G * Mh - a * psi, 3) 
-    return (pow(psi, 2) * (n1 - n2 + n3)) / (d1 * sqrt(epsilon - psi))
-'''
 
-# The integrand in the integral for the DF
-def aux(double r, double M, double a, double epsilon):
+# The integrand in the integral for the DF, in case there is gas and dark
+# matter. Everything in this function is provisory.
+def aux_gas(double r, double M_gas, double a_gas, double M_dm, double a_dm,
+            double epsilon):
+    cdef double dr_dpsi, d2rho_dr2, drho_dr, d2psi_dr2
+    dr_dpsi = 1/(-(M_gas*G)/(r+a_gas)**2-(M_dm*G)/(r+a_dm)**2)
+    d2rho_dr2 = (a_dm*M_dm)/(M_PI*r**3*(r+a_dm)**3)+(3*a_dm*M_dm)/(M_PI*r**2*(r+a_dm)**4)+(6*a_dm*M_dm)/(M_PI*r*(r+a_dm)**5)
+    drho_dr = -(a_dm*M_dm)/(2*M_PI*r**2*(r+a_dm)**3)-(3*a_dm*M_dm)/(2*M_PI*r*(r+a_dm)**4)
+    d2psi_dr2 = (2*M_gas*G)/(r+a_gas)**3+(2*M_dm*G)/(r+a_dm)**3
+    return (dr_dpsi)**2 * (d2rho_dr2 - drho_dr * dr_dpsi * d2psi_dr2) / (epsilon - (G * M_gas/(r + a_gas) + G * M_dm/(r + a_dm)))**0.5 * (-G * M_gas/(r + a_gas)**2 - G * M_dm/(r + a_dm)**2)
+
+
+# The same, in case there is only dark matter.
+def aux_dm(double r, double M, double a, double epsilon):
     cdef double n, d
     n = 6 * r * r + 4 * a * r + a * a
     d = pow(r * (r + a), 3) * sqrt(epsilon - (G * M) / (r + a))
     return n / d
+
+
+def gas_density(double r, double M_gas, double a_gas):
+    return (M_gas * a_gas) / (2 * M_PI * r * pow(r + a_gas, 3))
+
+
+cdef double cumulative_mass(double r, double M_gas, double a_gas, double M_dm,
+                            double a_dm):
+    cdef double gas_mass, dm_mass
+    gas_mass = (M_gas * r*r) / pow(r + a_gas, 2)
+    dm_mass = (M_dm * r*r) / pow(r + a_dm, 2)
+    return gas_mass + dm_mass
+
+
+def T_integrand(double t, double M_gas, double a_gas, double M_dm,
+                double a_dm):
+    return (G * cumulative_mass(t, M_gas, a_gas, M_dm, a_dm) *
+            gas_density(t, M_gas, a_gas)) / (t*t)
+
 
 def random_velocity(double vesc):
     cdef double vx, vy, vz, v2, vesc2
@@ -33,8 +56,10 @@ def random_velocity(double vesc):
             break
     return vx, vy, vz, v2
 
+
 ''' Obsolete stuff
 
+# Works when there is only dark matter.
 cdef double DF_analytical(double E, double Mh, double a):
     cdef double q, vg, cte
     if(E >= 0):
@@ -45,35 +70,4 @@ cdef double DF_analytical(double E, double Mh, double a):
         cte = Mh / (8 * sqrt(2) * pow(M_PI * a * vg, 3))
         return cte * (3 * asin(q) + q * sqrt(1 - q * q) * (1 - 2 * q * q) *
                (8 * pow(q, 4) - 8 * q * q - 3)) / pow(1 - q * q, 2.5)
-
-def DF_numerical(double E, double Mh, double a):
-    cdef double epsilon, cte
-    epsilon = -E
-    if(epsilon <= 0):
-        return 0
-    else:
-        cte = a / (sqrt(8) * pow(M_PI * G, 3) * pow(Mh, 2))
-        integral = integrate.quad(aux, 0, epsilon, args = (Mh, a, epsilon))
-        return cte * integral[0]
-
-def set_velocity(double radius, double Mh, double a,
-                 np.ndarray[np.float64_t] DF_tabulated,
-                 np.ndarray[np.float64_t] DF_pos):
-    cdef double fmax, y, phi
-    cdef double vx, vy, vz, v2, vesc
-    phi = potential(radius, Mh, a)
-    fmax = search_array(phi, DF_tabulated, DF_pos)
-    vesc = sqrt(-2.0 * phi)
-    while(True):
-        vx = vesc * (nprand.rand() * 2 - 1)
-        vy = vesc * (nprand.rand() * 2 - 1)
-        vz = vesc * (nprand.rand() * 2 - 1)
-        v2 = vx*vx + vy*vy + vz*vz
-        y = fmax * nprand.rand()
-        if(y < search_array(phi + 0.5 * v2, DF_tabulated, DF_pos)):
-            break
-    return [vx, vy, vz]
-
-cdef double potential(double radius, double Mh, double a):
-    return -(G * Mh) / (radius + a)
 '''
