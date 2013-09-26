@@ -16,7 +16,7 @@ def potential(point, radii, recorded_phis):
         return recorded_phis[id_]
     else:
         distances = np.array([np.linalg.norm(x - point) for x in radii])
-        s = np.sum(1. / distances)
+        s = np.sum(1.0 / distances)
         phi = -G * Mh * s
         recorded_phis[id_] = phi
         return phi

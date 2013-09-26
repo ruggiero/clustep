@@ -1,41 +1,71 @@
-import sys
+from sys import argv
+from sys import path as syspath
 from os import path
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
-matplotlib.use('Agg') # To be able to plot under an SSH session.
 from bisect import bisect_left
 
-sys.path.append(path.join(path.dirname(__file__), '..', 'misc'))
-from units import internal_energy_to_temp
-from snapread import read_data
+import numpy as np
+from scipy import integrate
+import matplotlib
+matplotlib.use('Agg') # To be able to plot under an SSH session.
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
+syspath.append(path.join(path.dirname(__file__), '..', 'misc'))
+syspath.append(path.join(path.dirname(__file__), '..', 'cluster'))
+from units import internal_energy_to_temp, temp_to_internal_energy
+import optimized_functions as opt
+from snapread import read_data, header
 import centers
 
 
 G = 43007.1
 
-a = 200
-Mh = 100000
+a_dm = 200
+a_gas = 200
+M_dm = 100000
+M_gas = 100000
 time = 0.0
 
 
-def hernquist_density(r):
+def hernquist_density(r, gas=False):
     if(r == 0):
         return 0
     else:
-        return (Mh * a) / (2 * np.pi * r * (r + a)**3)
+        if(gas):
+            return (M_gas * a_gas) / (2 * np.pi * r * (r + a_gas)**3)
+        else:
+            return (M_dm * a_dm) / (2 * np.pi * r * (r + a_dm)**3)
 
 
 def radial_velocity(r):
-    cte = (G * Mh) / (12 * a)
+    cte = (G * M_dm) / (12 * a)
     t1 = ((12 * r * (r + a)**3) / a**4) * np.log((r + a) / r)
     t2 = -r/(r + a) * (25 + 52 * r / a + 42 * (r / a)**2 + 12 * (r / a)**3)
     return (cte * (t1 + t2))**0.5
 
 
+def temperature(r):
+    MP_OVER_KB = 121.148
+    HYDROGEN_MASSFRAC = 0.76
+    meanweight_n = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC)
+    meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
+
+    integral = integrate.quad(opt.T_integrand,
+        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm), full_output=-1)
+    result = integral[0] / opt.gas_density(r, M_gas, a_gas)
+
+    temp_i = MP_OVER_KB * meanweight_i * result
+    temp_n = MP_OVER_KB * meanweight_n * result
+
+    if(temp_i > 1.0e4):
+        return temp_i
+    else:
+        return temp_n
+
+
+
 # Given a data vector, in which each element represents a different
-# particle by a list of the form [radius, radial_velocity^2], ordered
+# PARTICLe by a list of the form [radius, radial_velocity^2], ordered
 # according to the radii; and a multiplication factor, returns the right
 # indexes of a log partition of the vector. Also returns an auxiliary
 # vector, which will be useful in the functions that calculate the
@@ -47,7 +77,7 @@ def log_partition(data, factor):
     left_limit = 0
     right_limit = 0.01
     left_index = 0
-    while(right_limit < 200 * a):
+    while(right_limit < 200 * a_gas):
         # Before right_index, everybody is smaller than right_limit.
         right_index = left_index + bisect_left(radii[left_index:], right_limit)
         limits.append(right_index)
@@ -60,10 +90,13 @@ def log_partition(data, factor):
 
 
 # Returns a list containing elements of the form [radius, density].
-def density_distribution(data, partition, aux):
+def density_distribution(data, partition, aux, gas=False):
     distribution = []
     left = 0
-    cte = (10**10 * 3 * Mh) / (4 * np.pi * N_dm)
+    if(gas):
+        cte = (10**10 * 3 * Mh) / (4 * np.pi * N_dm)
+    else:
+        cte = (10**10 * 3 * M_gas) / (4 * np.pi * N_gas)
     for j in np.arange(len(partition)):
         right = partition[j]
         count = aux[j][0]
@@ -111,11 +144,14 @@ def temperature_distribution(gas_data, partition, aux):
     return distribution
 
 
-def density_plot(input_, data, part, aux):
+def density_plot(input_, data, part, aux, gas=False):
     dist = density_distribution(data, part, aux)
     x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]), num=500)
     p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
-    p2, = plt.plot(x_axis, [10**10 * hernquist_density(i) for i in x_axis])
+    if(gas):
+        p2, = plt.plot(x_axis, [10**10 * hernquist_density(i, gas=True) for i in x_axis])
+    else:
+        p2, = plt.plot(x_axis, [10**10 * hernquist_density(i, gas) for i in x_axis])
     plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
     plt.xlabel("Radius (kpc)")
     plt.ylabel("Density ( M$_{\odot}$/kpc$^3$)")
@@ -123,10 +159,15 @@ def density_plot(input_, data, part, aux):
     plt.yscale('log')
     plt.xlim([1, 10**4])
     plt.ylim([1, 10**10])
-    plt.title("t = %1.2f Gyr" % time)
-    plt.savefig(input_ + "-density.png")
+    if(gas):
+        plt.title("Gas, t = %1.2f Gyr" % time)
+        plt.savefig(input_ + "-gas-density.png")
+        print "Done with gas density for " + input_
+    else:
+        plt.title("Dark matter, t = %1.2f Gyr" % time)
+        plt.savefig(input_ + "-dm-density.png")
+        print "Done with dark matter density for " + input_
     plt.close()
-    print "Done with density for " + input_
 
 
 def radial_velocity_plot(input_, data, part, aux):
@@ -154,11 +195,13 @@ def radial_velocity_plot(input_, data, part, aux):
 
 def temperature_plot(input_, gas_data, part, aux):
     dist = temperature_distribution(gas_data, part, aux)
+    x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]), num=500)
     formatter = FuncFormatter(lambda x, pos : "%1.2f" % (x / 10**8))
     ax = plt.subplot(111)
     ax.yaxis.set_major_formatter(formatter)
     p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
-    #plt.legend([p1], ["Simulation"], loc=1)
+    p2, = plt.plot(x_axis, [temperature(i) for i in x_axis])
+    plt.legend([p1, p2], ["Simulation", "Theoretical value"], loc=1)
     plt.xlabel("Radius (kpc)")
     plt.ylabel("T (10$^8$K)")
     plt.xscale('log')
@@ -176,7 +219,7 @@ def temperature_plot(input_, gas_data, part, aux):
 def main():
     global time, N_dm, N_gas
     print "reading..."
-    input_ = sys.argv[1]
+    input_ = argv[1]
     snapshot = open(input_, 'r')
     h = header(snapshot)
     time = h.time
@@ -204,6 +247,7 @@ def main():
         radial_velocity_plot(input_, data_dm, part, aux)
     else:
         density_plot(input_, data_dm, part, aux)
+        density_plot(input_, data_gas, part, aux, gas=True)
         temperature_plot(input_, data_gas, part, aux)
 
 if __name__ == '__main__':

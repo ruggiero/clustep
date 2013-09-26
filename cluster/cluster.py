@@ -22,9 +22,10 @@ where SNAPSHOT is the name of the output file.
 """
 
 
-from sys import exit, argv, path
-from os import path
+from sys import exit, argv
+from sys import path as syspath
 from bisect import bisect_left
+from os import path
 
 import numpy as np
 import numpy.random as nprand
@@ -32,7 +33,7 @@ from scipy import integrate
 
 from snapwrite import process_input, write_snapshot
 import optimized_functions as opt
-path.append(os.path.join(os.path.dirname(__file__), '..', 'misc'))
+syspath.append(path.join(path.dirname(__file__), '..', 'misc'))
 from units import temp_to_internal_energy
 
 
@@ -76,7 +77,8 @@ def init():
     global gas
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
     args = argv[1:]
-    if not (path.isfile("header.txt") and isfile("cluster_param.txt")):
+    if not (path.isfile("header.txt") and
+            path.isfile("cluster_param.txt")):
         print "header.txt or cluster_param.txt missing."
         exit(0)
     if("--gas" in args):
@@ -95,23 +97,23 @@ def init():
 # Inverse cumulative mass function. Depends on both the parameters M and
 # a, in the hernquist density profile. Mc is a number between 0 and 1.
 def inverse_cumulative(Mc, M, a):
-    return (a * ((Mc * M)**0.5 + Mc)) / (M - Mc)
+    return (a * ((Mc*M)**0.5 + Mc)) / (M-Mc)
 
 
 def potential(r):
-    phi = - (G * M_dm) / (r + a_dm)
+    phi = - (G*M_dm) / (r+a_dm)
     if(gas):
-        phi += -(G * M_gas) / (r + a_gas) 
+        phi += -(G*M_gas) / (r+a_gas) 
     return phi
 
 
 def gas_density(r):
-    return (M_gas * a_gas) / (2 * np.pi * r * (r + a_gas)**3)
+    return (M_gas*a_gas) / (2 * np.pi * r * (r+a_gas)**3)
 
 
 def cumulative_mass(r):
-    gas_mass = (M_gas * r**2) / (r + a_gas)**2
-    dm_mass = (M_dm * r**2) / (r + a_dm)**2
+    gas_mass = (M_gas*r**2) / (r+a_gas)**2
+    dm_mass = (M_dm*r**2) / (r+a_dm)**2
     return gas_mass + dm_mass
 
 
@@ -121,7 +123,7 @@ def set_positions():
 
         # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
         radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas * 40000) / 40401), M_gas, a_gas)
+                                       ((M_gas*40000) / 40401), M_gas, a_gas)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
         xs = radii_gas * np.sin(thetas) * np.cos(phis)
@@ -134,8 +136,8 @@ def set_positions():
         coords_gas.shape = (1, -1) # Linearizing the array
 
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                  ((M_dm * 40000) / 40401), M_dm, a_dm)
-    thetas = np.arccos(nprand.sample(N_dm) * 2 - 1)
+                                  ((M_dm*40000) / 40401), M_dm, a_dm)
+    thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
     ys = radii_dm * np.sin(thetas) * np.sin(phis)
@@ -166,6 +168,13 @@ def set_velocities(radii_dm):
         if(i % 1000 == 0):
             print 'set velocity', i, 'of', N_dm
     vels = np.array(vels, order='C')
+    vel_COM = sum(vels)
+    if(gas):
+        vel_COM /= (N_gas + N_dm)
+    else:
+        vel_COM /= (N_dm)
+    for v in vels:
+        v -= vel_COM
     vels.shape = (1, -1)
     return vels[0]
 
@@ -177,12 +186,16 @@ def DF_numerical(E):
         return 0
     else:
         if(gas):
-            limit1 = (((M_gas**2+2*M_dm*M_gas+M_dm**2)*G**2+epsilon*((2*a_dm-2*a_gas)*M_gas+(2*a_gas-2*a_dm)*M_dm)*G+(a_gas**2-2*a_dm*a_gas+a_dm**2)*epsilon**2)**0.5+(M_gas+M_dm)*G+(-a_gas-a_dm)*epsilon)/(2*epsilon) # This is provisory
+            # I don't know how to format this thing
+            limit1 = (((M_gas**2+2*M_dm*M_gas+M_dm**2)*G**2+epsilon*
+                     ((2*a_dm-2*a_gas)*M_gas+(2*a_gas-2*a_dm)*M_dm)*G+
+                     (a_gas**2-2*a_dm*a_gas+a_dm**2)*epsilon**2)**0.5+
+                     (M_gas+M_dm)*G+(-a_gas-a_dm)*epsilon)/(2*epsilon) 
             integral = integrate.quad(opt.aux_gas, limit1, np.inf,
                 args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
             return -integral[0] / (8**0.5 * np.pi**2)
         else:
-            limit1 = (G * M_dm) / epsilon - a_dm
+            limit1 = (G * M_dm) / epsilon - a_dm * epsilon
             cte = a_dm / (np.pi**3 * G * 8**0.5)
             integral = integrate.quad(opt.aux_dm, limit1, np.inf,
                 args=(M_dm, a_dm, epsilon), full_output=-1)
@@ -198,8 +211,8 @@ def interpolate(E, DF_tabulated):
     else:
         dy = DF_tabulated[index][1] - DF_tabulated[index - 1][1]
         dx = DF_tabulated[index][0] - DF_tabulated[index - 1][0]
-        y = DF_tabulated[index - 1][1] + dy / dx *\
-            (DF_tabulated[index - 1][0] - E)
+        y = (DF_tabulated[index - 1][1] + dy / dx *
+             (DF_tabulated[index - 1][0] - E))
         return y
 
 
@@ -210,30 +223,29 @@ def sample_velocity(radius, DF_tabulated):
     while(True):
         vx, vy, vz, v2 = opt.random_velocity(vesc)
         y = DFmax * nprand.rand()
-        if(y < interpolate(phi + 0.5 * v2, DF_tabulated)):
+        if(y < interpolate(phi + 0.5*v2, DF_tabulated)):
             break
     return [vx, vy, vz]
 
 
 
 def temperature(r):
-    mp_over_kb = 121.148
-    integral = integrate.quad(opt.T_integrand,
-        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm), full_output=-1)
-    result = integral[0] / opt.gas_density(r, M_gas, a_gas)
-
+    MP_OVER_KB = 121.148
     HYDROGEN_MASSFRAC = 0.76
     meanweight_n = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC)
     meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
+
+    integral = integrate.quad(opt.T_integrand,
+        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm), full_output=-1)
+    result = integral[0] / opt.gas_density(r, M_gas, a_gas)
     
-    temp_i = mp_over_kb * meanweight_i * result
-    temp_n = mp_over_kb * meanweight_n * result
+    temp_i = MP_OVER_KB * meanweight_i * result
+    temp_n = MP_OVER_KB * meanweight_n * result
+
     if(temp_i > 1.0e4):
         return temp_to_internal_energy(temp_i)
-    elif(temp_n < 1.0e4):
-        return temp_to_internal_energy(temp_n)
     else:
-         return temp_to_internal_energy(0.5 * (temp_i + temp_n)) # ???
+        return temp_to_internal_energy(temp_n)
 
 
 def set_temperatures(radii_gas):

@@ -1,4 +1,4 @@
-from libc.math cimport asin, sqrt, pow, M_PI
+from libc.math cimport asin, sqrt, pow, M_PI, log
 
 import numpy.random as nprand
 
@@ -55,7 +55,6 @@ def random_velocity(double vesc):
         if(v2 < vesc2):
             break
     return vx, vy, vz, v2
-
 
 ''' Obsolete stuff
 
