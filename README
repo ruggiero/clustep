@@ -19,16 +19,19 @@ for execution.
 
 ===============================================================
 
-Syntax:
+Usage:
 
-* To create an initial conditions galaxy cluster halo snapshot with
-  cluster.py, contaning both dark matter and gas:
-    cd cluster/
-    python cluster.py --gas [FILE]
+cluster.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
 
-* To do the same, but with dark matter only (no gas):
-    cd cluster/
-    python cluster.py --dm [FILE]
+Generate an initial conditions file for a galaxy cluster halo simulation.
+
+Optional arguments:
+  -h, --help   show this help message and exit
+  --gas-core   Sets the density profile for the gas to have a core.
+  --dm-core    The same, but for the dark matter.
+  --dm-only    Generates an initial conditions file containing only dark
+               matter.
+  -o init.dat  The name of the output file.
 
 * To create density and average squared radial velocity distributions
   plots for a given snapshot (the output will be the creation of two

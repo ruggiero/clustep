@@ -26,6 +26,7 @@ from sys import exit, argv
 from sys import path as syspath
 from bisect import bisect_left
 from os import path
+from argparse import ArgumentParser as parser
 
 import numpy as np
 import numpy.random as nprand
@@ -38,7 +39,9 @@ from units import temp_to_internal_energy
 
 
 G = 43007.1
-gas = False
+gas = True
+gas_cusp = True
+dm_cusp = True
 
 
 def main():
@@ -76,18 +79,29 @@ def generate_cluster_without_gas():
 def init():
     global gas
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
-    args = argv[1:]
-    if not (path.isfile("header.txt") and
-            path.isfile("cluster_param.txt")):
+    flags = parser(description="Generate an initial conditions file\
+                                for a galaxy cluster halo simulation.")
+    flags.add_argument('--gas-core', help='Sets the density profile for the\
+                       gas to have a core.', action='store_true')
+    flags.add_argument('--dm-core', help='The same, but for the dark matter.',
+                       action='store_true')
+    flags.add_argument('--dm-only', help='Generates an initial conditions\
+                       file containing only dark matter.', action='store_true')
+    flags.add_argument('-o', help='The name of the output file.',
+                       metavar="init.dat", default="init.dat")
+    args = flags.parse_args()
+    if not path.isfile("header.txt") and path.isfile("cluster_param.txt"):
         print "header.txt or cluster_param.txt missing."
         exit(0)
-    if("--gas" in args):
-        gas = True
-    elif("--dm" in args):
-        gas = False
-    else:
-        print "Please tell whether you want a cluster with or without gas."
+    elif args.dm_only and args.gas_core:
+        print "Please decide whether you want gas or not."
         exit(0)
+    elif args.dm_core or args.gas_core:
+        print "These options are yet to be implemented."
+        exit(0)
+    if args.dm_only:
+        gas = False
+    
     vars_ = process_input("cluster_param.txt")
     M_dm, a_dm, N_dm = (float(i[0]) for i in vars_[0:3])
     if(gas):
@@ -191,7 +205,7 @@ def DF_numerical(E):
                      ((2*a_dm-2*a_gas)*M_gas+(2*a_gas-2*a_dm)*M_dm)*G+
                      (a_gas**2-2*a_dm*a_gas+a_dm**2)*epsilon**2)**0.5+
                      (M_gas+M_dm)*G+(-a_gas-a_dm)*epsilon)/(2*epsilon) 
-            integral = integrate.quad(opt.aux_gas, limit1, np.inf,
+            integral = integrate.quad(opt.aux_cusp_cusp, limit1, np.inf,
                 args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
             return -integral[0] / (8**0.5 * np.pi**2)
         else:
