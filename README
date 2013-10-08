@@ -33,10 +33,16 @@ Optional arguments:
                matter.
   -o init.dat  The name of the output file.
 
-* To create density and average squared radial velocity distributions
-  plots for a given snapshot (the output will be the creation of two
-  images in the file's folder):
-    python profiles.py [FILE]
+
+profiles.py [-h] [--gas-core] [--dm-core] [--dm-only] [-i file.dat]
+
+Plots stuff.
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --gas-core   Sets the density profile for the gas to have a core.
+  --dm-core    The same, but for the dark matter.
+  -i file.dat  The name of the input file.
 
 ===============================================================
 

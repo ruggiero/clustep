@@ -134,7 +134,7 @@ def potential(r):
 
 def gas_density(r):
     if(gas_core): 
-        return (3 * M_gas) / (4 * np.pi) * (a_gas / (r+a_gas)**4)
+        return (3 * M_gas * a_gas) / (4 * np.pi * (r+a_gas)**4)
     else:  
         return (M_gas*a_gas) / (2 * np.pi * r * (r+a_gas)**3)
 
@@ -145,7 +145,7 @@ def set_positions():
 
         # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
         radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas*40000) / 40401), M_gas, a_gas, core=dm_core)
+                                       ((M_gas*40000) / 40401), M_gas, a_gas, core=gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
         xs = radii_gas * np.sin(thetas) * np.cos(phis)
@@ -158,7 +158,7 @@ def set_positions():
         coords_gas.shape = (1, -1) # Linearizing the array
 
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                  ((M_dm*40000) / 40401), M_dm, a_dm, core=gas_core)
+                                  ((M_dm*40000) / 40401), M_dm, a_dm, core=dm_core)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
