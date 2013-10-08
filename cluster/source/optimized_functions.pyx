@@ -49,22 +49,30 @@ def aux_core(double r, double M_dm, double a_dm, double epsilon):
 
 
 
-def gas_density(double r, double M_gas, double a_gas):
-    return (M_gas * a_gas) / (2 * M_PI * r * pow(r + a_gas, 3))
-
+def gas_density(double r, double M_gas, double a_gas, int gas_core):
+    if(gas_core):
+        return (3 * M_gas * a_gas) / (4 * M_PI * (r+a_gas)**4)
+    else:
+        return (M_gas * a_gas) / (2 * M_PI * r * pow(r + a_gas, 3))
 
 cdef double cumulative_mass(double r, double M_gas, double a_gas, double M_dm,
-                            double a_dm):
+                            double a_dm, int gas_core, int dm_core):
     cdef double gas_mass, dm_mass
-    gas_mass = (M_gas * r*r) / pow(r + a_gas, 2)
-    dm_mass = (M_dm * r*r) / pow(r + a_dm, 2)
+    if(gas_core):
+        gas_mass = M_gas * pow(r / (r + a_gas), 3)
+    else:
+        gas_mass = (M_gas * r*r) / pow(r + a_gas, 2)
+    if(dm_core):
+        dm_mass = M_dm * pow(r / (r + a_dm), 3)
+    else:
+        dm_mass = (M_dm * r*r) / pow(r + a_dm, 2)
     return gas_mass + dm_mass
 
 
 def T_integrand(double t, double M_gas, double a_gas, double M_dm,
-                double a_dm):
-    return (G * cumulative_mass(t, M_gas, a_gas, M_dm, a_dm) *
-            gas_density(t, M_gas, a_gas)) / (t*t)
+                double a_dm, int gas_core, int dm_core):
+    return (G * cumulative_mass(t, M_gas, a_gas, M_dm, a_dm, gas_core, dm_core) *
+            gas_density(t, M_gas, a_gas, gas_core)) / (t*t)
 
 
 def random_velocity(double vesc):

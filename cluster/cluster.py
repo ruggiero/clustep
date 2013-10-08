@@ -269,8 +269,8 @@ def temperature(r):
     meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
 
     integral = integrate.quad(opt.T_integrand,
-        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm), full_output=-1)
-    result = integral[0] / opt.gas_density(r, M_gas, a_gas)
+        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)), full_output=-1)
+    result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
     
     temp_i = MP_OVER_KB * meanweight_i * result
     temp_n = MP_OVER_KB * meanweight_n * result
