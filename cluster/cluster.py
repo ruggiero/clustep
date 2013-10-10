@@ -141,11 +141,24 @@ def gas_density(r):
 
 
 def set_positions():
-    if(gas):
 
-        # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
+    # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
+    radii_dm = inverse_cumulative(nprand.sample(N_dm) *
+                                  ((M_dm*40000) / 40401), M_dm, a_dm, dm_core)
+    thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
+    phis = 2 * np.pi * nprand.sample(N_dm)
+    xs = radii_dm * np.sin(thetas) * np.cos(phis)
+    ys = radii_dm * np.sin(thetas) * np.sin(phis)
+    zs = radii_dm * np.cos(thetas)
+
+    # Older NumPy versions freak out without this line.
+    coords_dm = np.column_stack((xs, ys, zs))
+    coords_dm = np.array(coords_dm, order='C')
+    coords_dm.shape = (1, -1) # Linearizing the array
+
+    if(gas):
         radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas*40000) / 40401), M_gas, a_gas, core=gas_core)
+                                       ((M_gas*40000) / 40401), M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
         xs = radii_gas * np.sin(thetas) * np.cos(phis)
@@ -153,21 +166,8 @@ def set_positions():
         zs = radii_gas * np.cos(thetas)
         coords_gas = np.column_stack((xs, ys, zs))
 
-        # Older NumPy versions freak out without this line.
         coords_gas = np.array(coords_gas, order='C')
-        coords_gas.shape = (1, -1) # Linearizing the array
-
-    radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                  ((M_dm*40000) / 40401), M_dm, a_dm, core=dm_core)
-    thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
-    phis = 2 * np.pi * nprand.sample(N_dm)
-    xs = radii_dm * np.sin(thetas) * np.cos(phis)
-    ys = radii_dm * np.sin(thetas) * np.sin(phis)
-    zs = radii_dm * np.cos(thetas)
-    coords_dm = np.column_stack((xs, ys, zs))
-    coords_dm = np.array(coords_dm, order='C')
-    coords_dm.shape = (1, -1)
-    if(gas):
+        coords_gas.shape = (1, -1) 
         coords_total = np.concatenate((coords_gas[0], coords_dm[0]))
         return coords_total, radii_gas, radii_dm
     else:
@@ -179,7 +179,7 @@ def set_velocities(radii_dm):
     vels = []
     DF_tabulated = []
     for i in np.linspace(0.99 * potential(0), 0, 1000):
-        DF_tabulated.append([i, DF_numerical(i)])
+        DF_tabulated.append([i, DF(i)])
     DF_tabulated = np.array(DF_tabulated)
     print "done with tabulation"
     if(gas):
@@ -201,7 +201,7 @@ def set_velocities(radii_dm):
     return vels[0]
 
 
-def DF_numerical(E):
+def DF(E):
     epsilon = -E
     if(epsilon <= 0):
         return 0
@@ -229,9 +229,7 @@ def DF_numerical(E):
                 integral = integrate.quad(opt.aux_core, limit1, np.inf,
                     args=(M_dm, a_dm, epsilon), full_output=-1) 
             else:
-                #mimimi limit1 eh outro aqui
-                integral = integrate.quad(opt.aux_cusp, limit1, np.inf,
-                    args=(M_dm, a_dm, epsilon), full_output=-1) 
+                return opt.DF_analytical(E, M_dm, a_dm)
         return integral[0] / (8**0.5 * np.pi**2)
 
 
@@ -271,6 +269,7 @@ def temperature(r):
     integral = integrate.quad(opt.T_integrand,
         r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)), full_output=-1)
     result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
+
     
     temp_i = MP_OVER_KB * meanweight_i * result
     temp_n = MP_OVER_KB * meanweight_n * result

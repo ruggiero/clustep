@@ -87,10 +87,8 @@ def random_velocity(double vesc):
             break
     return vx, vy, vz, v2
 
-''' Obsolete stuff
-
 # Works when there is only dark matter.
-cdef double DF_analytical(double E, double Mh, double a):
+def DF_analytical(double E, double Mh, double a):
     cdef double q, vg, cte
     if(E >= 0):
         return 0.0
@@ -100,5 +98,3 @@ cdef double DF_analytical(double E, double Mh, double a):
         cte = Mh / (8 * sqrt(2) * pow(M_PI * a * vg, 3))
         return cte * (3 * asin(q) + q * sqrt(1 - q * q) * (1 - 2 * q * q) *
                (8 * pow(q, 4) - 8 * q * q - 3)) / pow(1 - q * q, 2.5)
-'''
-
