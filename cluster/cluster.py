@@ -110,7 +110,7 @@ def init():
 
 # Inverse cumulative mass function. Depends on both the parameters M and
 # a, in the Dehnen density profile. Mc is a number between 0 and M.
-def inverse_cumulative(Mc, M, a, core=False):
+def inverse_cumulative(Mc, M, a, core):
     if(core):
         return (a * (Mc**(2/3.) * M**(4/3.) + Mc*M + Mc**(4/3.) * M**(2/3.)))/(Mc**(1/3.) * M**(2/3.) * (M - Mc))
     else:
@@ -285,6 +285,8 @@ def set_temperatures(radii_gas):
     temps = np.zeros(N_gas)
     for i, r in enumerate(radii_gas):
         temps[i] = temperature(r)
+        if i % 1000 == 0:
+            print "set temperature", i, "of", N_gas
     return temps
 
 
