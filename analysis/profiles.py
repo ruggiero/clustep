@@ -158,7 +158,6 @@ def density_plot(input_, data, part, aux, gas=False):
     x_axis = np.logspace(np.log10(dist[0][0]), np.log10(dist[-1][0]), num=500)
     p1, = plt.plot([i[0] for i in dist], [i[1] for i in dist], 'o')
     if(gas):
-        for q in dist:
         p2, = plt.plot(x_axis, [10**10 * density(i, gas=True) for i in x_axis])
     else:
         p2, = plt.plot(x_axis, [10**10 * density(i) for i in x_axis])
@@ -267,6 +266,7 @@ def process_data(input_):
         else:
             vr = np.dot(i.pos, i.vel) / r
             data_dm.append([r, vr**2])
+            continue
     del(p_list)
     data_dm = sorted(data_dm)
     data_gas = sorted(data_gas)
@@ -278,15 +278,16 @@ def main():
     input_ = init()
     print "reading..."
     data_dm, data_gas = process_data(input_)
-    part, aux = log_partition(data_dm, 1.3)
+    part_dm, aux_dm = log_partition(data_dm, 1.3)
+    part_gas, aux_gas = log_partition(data_gas, 1.3)
     if gas:
-        density_plot(input_, data_dm, part, aux)
-        density_plot(input_, data_gas, part, aux, gas=True)
-        temperature_plot(input_, data_gas, part, aux)
+        density_plot(input_, data_dm, part_dm, aux_dm)
+        density_plot(input_, data_gas, part_gas, aux_gas, gas=True)
+        temperature_plot(input_, data_gas, part_gas, aux_gas)
     else:
-        density_plot(input_, data_dm, part, aux, gas=False)
+        density_plot(input_, data_dm, part_dm, aux_dm, gas=False)
         if not dm_core:
-            radial_velocity_plot(input_, data_dm, part, aux)
+            radial_velocity_plot(input_, data_dm, part_dm, aux_dm)
 
 
 

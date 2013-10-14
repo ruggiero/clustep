@@ -2,11 +2,11 @@
 
 DESCRIPTION:
 
-Script that generates a snapshot containing a galaxy cluster halo, with
-dark matter and gas, both following a Hernquist density profile. The
-number of particles of each of these, as well as the parameters a and
-M in the density profiles, are defined in the file cluster_param.txt
-(see example).
+Script that generates a snapshot containing a galaxy cluster halo,
+containi ng both dark matter and gas, each of which may follow a Dehnen
+density profile with gamma equals 1 or 2. The number of particles in
+each of these, as well as the parameters a and M in the density profiles,
+are defined in the file cluster_param.txt (see example).
 
 Here, the value for the gravitational constant G is such that the unit
 for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
@@ -61,7 +61,7 @@ def generate_cluster_with_gas():
     print "calculating the densities"
     rho = set_densities(radii_gas)
     print "writing output file..."
-    return[coords, vels, U, rho]
+    return [coords, vels, U, rho]
 
 
 def generate_cluster_without_gas():
