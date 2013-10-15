@@ -3,7 +3,7 @@
 Required libraries (and the names of the packages in Ubuntu):
 
 NumPy (python-numpy)
-Cython (cython)
+Cython (cython), higher than 0.17.4
 python-dev
 Matplotlib (python-matplotlib)
 

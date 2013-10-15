@@ -230,7 +230,7 @@ def DF(E):
                     args=(M_dm, a_dm, epsilon), full_output=-1) 
             else:
                 return opt.DF_analytical(E, M_dm, a_dm)
-        return integral[0] / (8**0.5 * np.pi**2)
+        return -integral[0] / (8**0.5 * np.pi**2)
 
 
 def interpolate(E, DF_tabulated):
@@ -270,7 +270,6 @@ def temperature(r):
         r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)), full_output=-1)
     result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
 
-    
     temp_i = MP_OVER_KB * meanweight_i * result
     temp_n = MP_OVER_KB * meanweight_n * result
 
