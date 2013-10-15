@@ -74,8 +74,8 @@ def init():
                        gas to have a core.', action='store_true')
     flags.add_argument('--dm-core', help='The same, but for the dark matter.',
                        action='store_true')
-    flags.add_argument('-i', help='The name of the input file.',
-                       metavar="file.dat", required=True)
+    flags.add_argument('i', help='The name of the input file.',
+                       metavar="file.dat")
     args = flags.parse_args()
     gas_core = args.gas_core
     dm_core = args.dm_core
