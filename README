@@ -36,15 +36,17 @@ Optional arguments:
   -o init.dat  The name of the output file.
 
 
-usage: profiles.py [-h] [--gas-core] [--dm-core] -i file.dat
+profiles.py [-h] [--gas-core] [--dm-core] -i file.dat
 
 Plots stuff.
 
+positional arguments:
+  file.dat    The name of the input file.
+
 optional arguments:
-  -h, --help   show this help message and exit
-  --gas-core   Sets the density profile for the gas to have a core.
-  --dm-core    The same, but for the dark matter.
-  -i file.dat  The name of the input file.
+  -h, --help  show this help message and exit
+  --gas-core  Sets the density profile for the gas to have a core.
+  --dm-core   The same, but for the dark matter.
 
 ===============================================================
 
