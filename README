@@ -3,9 +3,11 @@
 Required libraries (and the names of the packages in Ubuntu):
 
 NumPy (python-numpy)
+SciPy (python-scipy)
 Cython (cython), higher than 0.17.4
-python-dev
 Matplotlib (python-matplotlib)
+Argparse (python-argparse), in case you use Python < 3.2
+python-dev
 
 ===============================================================
 
@@ -34,7 +36,7 @@ Optional arguments:
   -o init.dat  The name of the output file.
 
 
-profiles.py [-h] [--gas-core] [--dm-core] [--dm-only] [-i file.dat]
+usage: profiles.py [-h] [--gas-core] [--dm-core] -i file.dat
 
 Plots stuff.
 
