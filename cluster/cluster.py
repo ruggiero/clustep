@@ -3,9 +3,9 @@
 DESCRIPTION:
 
 Script that generates a snapshot containing a galaxy cluster halo,
-containi ng both dark matter and gas, each of which may follow a Dehnen
-density profile with gamma equals 1 or 2. The number of particles in
-each of these, as well as the parameters a and M in the density profiles,
+with both dark matter and gas, each of which following a Dehnen density
+profile with either gamma equals 1 or 2. The number of particles in each
+of these, as well as the parameters a and M in the density profiles,
 are defined in the file cluster_param.txt (see example).
 
 Here, the value for the gravitational constant G is such that the unit
@@ -13,11 +13,17 @@ for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
 1.0 km/s.
 
 
-USE:
+USAGE:
 
-python cluster.py SNAPSHOT,
+cluster.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
 
-where SNAPSHOT is the name of the output file.
+optional arguments:
+  -h, --help   show this help message and exit
+  --gas-core   Sets the density profile for the gas to have a core.
+  --dm-core    The same, but for the dark matter.
+  --dm-only    Generates an initial conditions file containing only dark
+               matter.
+  -o init.dat  The name of the output file.
 
 """
 
@@ -73,7 +79,6 @@ def generate_cluster_without_gas():
     return [coords, vels]
 
 
-
 def init():
     global gas, gas_core, dm_core
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
@@ -107,12 +112,12 @@ def init():
         M_gas, a_gas, N_gas = (float(i[0]) for i in vars_[3:6])
 
 
-
 # Inverse cumulative mass function. Depends on both the parameters M and
 # a, in the Dehnen density profile. Mc is a number between 0 and M.
 def inverse_cumulative(Mc, M, a, core):
     if(core):
-        return (a * (Mc**(2/3.) * M**(4/3.) + Mc*M + Mc**(4/3.) * M**(2/3.)))/(Mc**(1/3.) * M**(2/3.) * (M - Mc))
+        return ((a * (Mc**(2/3.)*M**(4/3.) + Mc*M + Mc**(4/3.)*M**(2/3.))) /
+                   (Mc**(1/3.) * M**(2/3.) * (M-Mc)))
     else:
         return (a * ((Mc*M)**0.5 + Mc)) / (M-Mc)
 
@@ -120,13 +125,13 @@ def inverse_cumulative(Mc, M, a, core):
 def potential(r):
     if(gas):
         if(gas_core):
-            phi = -(G * M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
+            phi = -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
         else:
             phi = -(G*M_gas) / (r+a_gas)
     else:
         phi = 0
     if(dm_core):
-        phi -= (G * M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
+        phi -= (G*M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
     else:
         phi -= (G*M_dm) / (r + a_dm)
     return phi
@@ -134,14 +139,12 @@ def potential(r):
 
 def gas_density(r):
     if(gas_core): 
-        return (3 * M_gas * a_gas) / (4 * np.pi * (r+a_gas)**4)
+        return (3*M_gas*a_gas) / (4*np.pi*(r+a_gas)**4)
     else:  
-        return (M_gas*a_gas) / (2 * np.pi * r * (r+a_gas)**3)
-
+        return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
 def set_positions():
-
     # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
                                   ((M_dm*40000) / 40401), M_dm, a_dm, dm_core)
@@ -154,11 +157,12 @@ def set_positions():
     # Older NumPy versions freak out without this line.
     coords_dm = np.column_stack((xs, ys, zs))
     coords_dm = np.array(coords_dm, order='C')
-    coords_dm.shape = (1, -1) # Linearizing the array
+    coords_dm.shape = (1, -1) # Linearizing the array.
 
     if(gas):
         radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas*40000) / 40401), M_gas, a_gas, gas_core)
+                                       ((M_gas*40000) / 40401),
+                                       M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
         xs = radii_gas * np.sin(thetas) * np.cos(phis)
@@ -174,11 +178,11 @@ def set_positions():
         return coords_dm[0], radii_dm
 
 
-
 def set_velocities(radii_dm):
     vels = []
     DF_tabulated = []
-    for i in np.linspace(0.99 * potential(0), 0, 1000):
+    # This 0.99 avoids numerical problems.
+    for i in np.linspace(potential(0)*0.99, 0, 1000):
         DF_tabulated.append([i, DF(i)])
     DF_tabulated = np.array(DF_tabulated)
     print "done with tabulation"
@@ -190,7 +194,7 @@ def set_velocities(radii_dm):
         if(i % 1000 == 0):
             print 'set velocity', i, 'of', N_dm
     vels = np.array(vels, order='C')
-    vel_COM = sum(vels)
+    vel_COM = sum(vels) # The velocity of the center of mass.
     if(gas):
         vel_COM /= (N_gas + N_dm)
     else:
@@ -206,27 +210,30 @@ def DF(E):
     if(epsilon <= 0):
         return 0
     else:
-        # this is r(epsilon) => psi(r) - epsilon = 0
-        #print epsilon, -potential(0) - epsilon, -potential(200 * a_gas) - epsilon
-        limit1 = brentq(lambda r : -potential(r) - epsilon, 0, 1.0e10)
+        # This is r(epsilon), where psi(r) - epsilon = 0.
+        limit = brentq(lambda r : -potential(r) - epsilon, 0, 1.0e10)
         if(gas):
             if(gas_core):
                 if(dm_core):
-                    integral = integrate.quad(opt.aux_core_core, limit1, np.inf,
-                        args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
+                    integral = integrate.quad(opt.aux_core_core, limit, np.inf,
+                        args=(M_gas, a_gas, M_dm, a_dm, epsilon), 
+                        full_output=-1)
                 else:
-                    integral = integrate.quad(opt.aux_core_cusp, limit1, np.inf,
-                        args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
+                    integral = integrate.quad(opt.aux_core_cusp, limit, np.inf,
+                        args=(M_gas, a_gas, M_dm, a_dm, epsilon),
+                        full_output=-1)
             else:
                 if(dm_core):
-                    integral = integrate.quad(opt.aux_cusp_core, limit1, np.inf,
-                        args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
+                    integral = integrate.quad(opt.aux_cusp_core, limit, np.inf,
+                        args=(M_gas, a_gas, M_dm, a_dm, epsilon),
+                        full_output=-1)
                 else: 
-                    integral = integrate.quad(opt.aux_cusp_cusp, limit1, np.inf,
-                        args=(M_gas, a_gas, M_dm, a_dm, epsilon), full_output=-1)
+                    integral = integrate.quad(opt.aux_cusp_cusp, limit, np.inf,
+                        args=(M_gas, a_gas, M_dm, a_dm, epsilon),
+                        full_output=-1)
         else:
             if(dm_core):
-                integral = integrate.quad(opt.aux_core, limit1, np.inf,
+                integral = integrate.quad(opt.aux_core, limit, np.inf,
                     args=(M_dm, a_dm, epsilon), full_output=-1) 
             else:
                 return opt.DF_analytical(E, M_dm, a_dm)
@@ -250,7 +257,7 @@ def interpolate(E, DF_tabulated):
 def sample_velocity(radius, DF_tabulated):
     phi = potential(radius)
     DFmax = interpolate(phi, DF_tabulated)
-    vesc = (-2.0 * phi)**0.5
+    vesc = (-2.0*phi)**0.5
     while(True):
         vx, vy, vz, v2 = opt.random_velocity(vesc)
         y = DFmax * nprand.rand()
@@ -259,15 +266,15 @@ def sample_velocity(radius, DF_tabulated):
     return [vx, vy, vz]
 
 
-
 def temperature(r):
     MP_OVER_KB = 121.148
     HYDROGEN_MASSFRAC = 0.76
     meanweight_n = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC)
     meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
 
-    integral = integrate.quad(opt.T_integrand,
-        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)), full_output=-1)
+    integral = integrate.quad(opt.T_integrand, r, np.inf,
+        args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)),
+        full_output=-1)
     result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
 
     temp_i = MP_OVER_KB * meanweight_i * result
@@ -295,7 +302,6 @@ def set_densities(radii_gas):
     return rho
 
 
-
 def write_input_file(cluster_data):
     coords = cluster_data[0]
     vels = cluster_data[1]
@@ -316,7 +322,6 @@ def write_input_file(cluster_data):
         masses = masses_dm
         write_snapshot(n_part=[0, N_dm, 0, 0, 0, 0], from_text=False,
                        data_list=[coords, vels, ids, masses])
-
 
 
 if __name__ == '__main__':

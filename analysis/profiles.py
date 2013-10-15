@@ -1,3 +1,26 @@
+'''
+
+DESCRIPTION:
+
+Script that plots density, temperature and radial velocity profiles,
+given as an input a snapshot containing a galaxy cluster halo, with both
+gas and dark matter components following a Dehnen density profile with
+either gamma = 0 or gamma = 1.
+
+
+USAGE:
+
+profiles.py [-h] [--gas-core] [--dm-core] -i file.dat
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --gas-core   Sets the density profile for the gas to have a core.
+  --dm-core    The same, but for the dark matter.
+  -i file.dat  The name of the input file.
+
+'''
+
+
 from sys import path as syspath
 from os import path
 from bisect import bisect_left
@@ -20,6 +43,7 @@ import centers
 
 G = 43007.1
 
+# These variables must be updated manually.
 a_dm = 200
 a_gas = 200
 M_dm = 100000
@@ -27,27 +51,90 @@ M_gas = 100000
 time = 0.0
 
 
+def main():
+    input_ = init()
+    print "reading..."
+    data_dm, data_gas = process_data(input_)
+    part_dm, aux_dm = log_partition(data_dm, 1.3)
+    part_gas, aux_gas = log_partition(data_gas, 1.3)
+    if gas:
+        density_plot(input_, data_dm, part_dm, aux_dm)
+        density_plot(input_, data_gas, part_gas, aux_gas, gas=True)
+        temperature_plot(input_, data_gas, part_gas, aux_gas)
+    else:
+        density_plot(input_, data_dm, part_dm, aux_dm, gas=False)
+        if not dm_core:
+            radial_velocity_plot(input_, data_dm, part_dm, aux_dm)
+
+
+def init():
+    global gas_core, dm_core
+    flags = parser(description="Plots stuff.")
+    flags.add_argument('--gas-core', help='Sets the density profile for the\
+                       gas to have a core.', action='store_true')
+    flags.add_argument('--dm-core', help='The same, but for the dark matter.',
+                       action='store_true')
+    flags.add_argument('-i', help='The name of the input file.',
+                       metavar="file.dat", required=True)
+    args = flags.parse_args()
+    gas_core = args.gas_core
+    dm_core = args.dm_core
+    input_ = args.i
+    return input_
+
+
+def process_data(input_):
+    global gas, time, N_dm, N_gas
+    snapshot = open(input_, 'r')
+    h = header(snapshot)
+    time = h.time
+    N_dm = h.n_part_total[1]
+    N_gas = h.n_part_total[0]
+    if N_gas: 
+        gas = True
+    else:
+        gas = False
+    p_list = read_data(snapshot, h)
+    snapshot.close()
+    data_gas = []
+    data_dm = []
+    COD = centers.COD(p_list)
+    for i in p_list:
+        i.pos -= COD
+        r = np.linalg.norm(i.pos)
+        if(i.ID <= h.n_part_total[0]):
+            data_gas.append([r, internal_energy_to_temp(i.U)])
+        else:
+            vr = np.dot(i.pos, i.vel) / r
+            data_dm.append([r, vr**2])
+            continue
+    del(p_list)
+    data_dm = sorted(data_dm)
+    data_gas = sorted(data_gas)
+    return data_dm, data_gas
+ 
+
 def density(r, gas=False):
     if(r == 0):
         return 0
     else:
         if(gas):
             if(gas_core):
-                return (3 * M_gas * a_gas) / (4 * np.pi * (r+a_gas)**4)
+                return (3*M_gas*a_gas) / (4*np.pi*(r+a_gas)**4)
             else:
-                return (M_gas * a_gas) / (2 * np.pi * r * (r + a_gas)**3)
+                return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
         else:
             if(dm_core):
-                return (3 * M_dm * a_dm) / (4 * np.pi * (r+a_dm)**4)
+                return (3*M_dm*a_dm) / (4*np.pi*(r+a_dm)**4)
             else:
-                return (M_dm * a_dm) / (2 * np.pi * r * (r + a_dm)**3)
+                return (M_dm*a_dm) / (2*np.pi*r*(r+a_dm)**3)
 
 
 # Only applies when there is only dark matter, and it follows a Hernquist
-# density profile
+# density profile.
 def radial_velocity(r):
     cte = (G*M_dm) / (12*a_dm)
-    t1 = ((12 * r * (r + a_dm)**3) / a_dm**4) * np.log((r + a_dm) / r)
+    t1 = ((12 * r * (r+a_dm)**3) / a_dm**4) * np.log((r+a_dm) / r)
     t2 = -r/(r+a_dm) * (25 + 52*r/a_dm + 42 * (r/a_dm)**2 + 12 * (r/a_dm)**3)
     return (cte * (t1+t2))**0.5
 
@@ -59,9 +146,9 @@ def temperature(r):
     meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
 
     integral = integrate.quad(opt.T_integrand,
-        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)), full_output=-1)
+        r, np.inf, args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)),
+        full_output=-1)
     result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
-
 
     temp_i = MP_OVER_KB * meanweight_i * result
     temp_n = MP_OVER_KB * meanweight_n * result
@@ -70,7 +157,6 @@ def temperature(r):
         return temp_i
     else:
         return temp_n
-
 
 
 # Given a data vector, in which each element represents a different
@@ -103,9 +189,9 @@ def density_distribution(data, partition, aux, gas=False):
     distribution = []
     left = 0
     if(gas):
-        cte = (10**10 * 3 * M_gas) / (4 * np.pi * N_gas)
+        cte = (10**10*3*M_gas) / (4*np.pi*N_gas)
     else:
-        cte = (10**10 * 3 * M_dm) / (4 * np.pi * N_dm)
+        cte = (10**10*3*M_dm) / (4*np.pi*N_dm)
     for j in np.arange(len(partition)):
         right = partition[j]
         count = aux[j][0]
@@ -223,72 +309,6 @@ def temperature_plot(input_, gas_data, part, aux):
     plt.savefig(input_ + "-temperature.png")
     plt.close()
     print "Done with temperature for " + input_
-
-
-
-def init():
-    global gas_core, dm_core
-    flags = parser(description="Plots stuff.")
-    flags.add_argument('--gas-core', help='Sets the density profile for the\
-                       gas to have a core.', action='store_true')
-    flags.add_argument('--dm-core', help='The same, but for the dark matter.',
-                       action='store_true')
-    flags.add_argument('-i', help='The name of the input file.',
-                       metavar="file.dat", required=True)
-    args = flags.parse_args()
-    gas_core = args.gas_core
-    dm_core = args.dm_core
-    input_ = args.i
-    return input_
-
-
-def process_data(input_):
-    global gas, time, N_dm, N_gas
-    snapshot = open(input_, 'r')
-    h = header(snapshot)
-    time = h.time
-    N_dm = h.n_part_total[1]
-    N_gas = h.n_part_total[0]
-    if N_gas: 
-        gas = True
-    else:
-        gas = False
-    p_list = read_data(snapshot, h)
-    snapshot.close()
-    data_gas = []
-    data_dm = []
-    COD = centers.COD(p_list)
-    for i in p_list:
-        i.pos -= COD
-        r = np.linalg.norm(i.pos)
-        if(i.ID <= h.n_part_total[0]):
-            data_gas.append([r, internal_energy_to_temp(i.U)])
-        else:
-            vr = np.dot(i.pos, i.vel) / r
-            data_dm.append([r, vr**2])
-            continue
-    del(p_list)
-    data_dm = sorted(data_dm)
-    data_gas = sorted(data_gas)
-    return data_dm, data_gas
- 
-
-
-def main():
-    input_ = init()
-    print "reading..."
-    data_dm, data_gas = process_data(input_)
-    part_dm, aux_dm = log_partition(data_dm, 1.3)
-    part_gas, aux_gas = log_partition(data_gas, 1.3)
-    if gas:
-        density_plot(input_, data_dm, part_dm, aux_dm)
-        density_plot(input_, data_gas, part_gas, aux_gas, gas=True)
-        temperature_plot(input_, data_gas, part_gas, aux_gas)
-    else:
-        density_plot(input_, data_dm, part_dm, aux_dm, gas=False)
-        if not dm_core:
-            radial_velocity_plot(input_, data_dm, part_dm, aux_dm)
-
 
 
 if __name__ == '__main__':
