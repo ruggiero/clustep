@@ -185,7 +185,7 @@ def set_velocities(radii_dm):
     for i in np.linspace(potential(0)*0.99, 0, 1000):
         DF_tabulated.append([i, DF(i)])
     DF_tabulated = np.array(DF_tabulated)
-    print "done with tabulation"
+    print "done with DF tabulation"
     if(gas):
         for i in np.arange(N_gas):
             vels.append([0.0, 0.0, 0.0])
@@ -288,10 +288,14 @@ def temperature(r):
 
 def set_temperatures(radii_gas):
     temps = np.zeros(N_gas)
+
+    T_tabulated = []
+    # This 0.99 avoids numerical problems.
+    for r in np.logspace(-1, np.log10(200*a_gas), 1000):
+        T_tabulated.append([r, temperature(r)])
+    T_tabulated = np.array(T_tabulated)
     for i, r in enumerate(radii_gas):
-        temps[i] = temperature(r)
-        if i % 1000 == 0:
-            print "set temperature", i, "of", N_gas
+        temps[i] = interpolate(r, T_tabulated)
     return temps
 
 
