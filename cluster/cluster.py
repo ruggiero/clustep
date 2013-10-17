@@ -82,7 +82,7 @@ def generate_cluster_without_gas():
 def init():
     global gas, gas_core, dm_core
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
-    flags = parser(description="Generate an initial conditions file\
+    flags = parser(description="Generates an initial conditions file\
                                 for a galaxy cluster halo simulation.")
     flags.add_argument('--gas-core', help='Sets the density profile for the\
                        gas to have a core.', action='store_true')
