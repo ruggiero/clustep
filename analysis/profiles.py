@@ -107,7 +107,6 @@ def process_data(input_):
         else:
             vr = np.dot(i.pos, i.vel) / r
             data_dm.append([r, vr**2])
-            continue
     del(p_list)
     data_dm = sorted(data_dm)
     data_gas = sorted(data_gas)
