@@ -49,7 +49,7 @@ optional arguments:
   --dm-core   The same, but for the dark matter.
 
 
-### Author:
+## Author:
     Rafael Ruggiero
     Undergraduate student at Universidade de São Paulo (USP), Brazil
     Contact: bluewhale [at] cecm.usp.br
