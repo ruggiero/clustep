@@ -31,7 +31,7 @@ for execution.
       --gas-core   Sets the density profile for the gas to have a core.
       --dm-core    The same, but for the dark matter.
       --dm-only    Generates an initial conditions file containing only dark
-               matter.
+                   matter.
       -o init.dat  The name of the output file.
 
 ### profiles.py
