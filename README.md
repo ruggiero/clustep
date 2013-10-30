@@ -22,34 +22,35 @@ for execution.
 
 ### cluster.py
 
-cluster.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
+    cluster.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
 
-Generate an initial conditions file for a galaxy cluster halo simulation.
+    Generate an initial conditions file for a galaxy cluster halo simulation.
 
-Optional arguments:
-  -h, --help   show this help message and exit
-  --gas-core   Sets the density profile for the gas to have a core.
-  --dm-core    The same, but for the dark matter.
-  --dm-only    Generates an initial conditions file containing only dark
+    Optional arguments:
+      -h, --help   show this help message and exit
+      --gas-core   Sets the density profile for the gas to have a core.
+      --dm-core    The same, but for the dark matter.
+      --dm-only    Generates an initial conditions file containing only dark
                matter.
-  -o init.dat  The name of the output file.
+      -o init.dat  The name of the output file.
 
 ### profiles.py
 
-profiles.py [-h] [--gas-core] [--dm-core] file.dat
+    profiles.py [-h] [--gas-core] [--dm-core] file.dat
 
-Plots stuff.
+    Plots stuff.
 
-positional arguments:
-  file.dat    The name of the input file.
+    positional arguments:
+      file.dat    The name of the input file.
 
-optional arguments:
-  -h, --help  show this help message and exit
-  --gas-core  Sets the density profile for the gas to have a core.
-  --dm-core   The same, but for the dark matter.
+    optional arguments:
+      -h, --help  show this help message and exit
+      --gas-core  Sets the density profile for the gas to have a core.
+      --dm-core   The same, but for the dark matter.
 
 
-## Author:
+## Author
+
     Rafael Ruggiero
     Undergraduate student at Universidade de São Paulo (USP), Brazil
     Contact: bluewhale [at] cecm.usp.br
