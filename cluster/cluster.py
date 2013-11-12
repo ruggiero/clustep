@@ -95,7 +95,7 @@ def init():
     args = flags.parse_args()
     gas_core = args.gas_core
     dm_core = args.dm_core
-    if not path.isfile("header.txt") and path.isfile("cluster_param.txt"):
+    if not (path.isfile("header.txt") and path.isfile("cluster_param.txt")):
         print "header.txt or cluster_param.txt missing."
         exit(0)
     if args.dm_only:
