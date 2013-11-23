@@ -14,8 +14,8 @@
 All the scripts can be executed without installation or compilation,
 except for cluster.py, which uses a custom Cython library that has to
 be compiled. For that, just cd to /cluster and type 'make'. A new file,
-named rejection.so, will be created, and then cluster.py will be ready
-for execution.
+named optimized_funcions.so, will be created, and then cluster.py will
+be ready for execution.
 
 
 ## Usage
@@ -57,4 +57,3 @@ for execution.
 
 Credits for Dr. Rubens Machado (http://www.astro.iag.usp.br/~rgmachado/),
 for the vital support and suggestions.
-
