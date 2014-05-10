@@ -98,9 +98,9 @@ def process_data(input_):
     snapshot.close()
     data_gas = []
     data_dm = []
-    COD = centers.COD(p_list)
+    #COD = centers.COD(p_list)
     for i in p_list:
-        i.pos -= COD
+    #    i.pos -= COD
         r = np.linalg.norm(i.pos)
         if(i.ID <= h.n_part_total[0]):
             data_gas.append([r, internal_energy_to_temp(i.U)])

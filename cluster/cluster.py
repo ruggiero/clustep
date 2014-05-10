@@ -1,5 +1,4 @@
 """
-
 DESCRIPTION:
 
 Script that generates a snapshot containing a galaxy cluster halo,
@@ -80,7 +79,7 @@ def generate_cluster_without_gas():
 
 
 def init():
-    global gas, gas_core, dm_core
+    global gas, gas_core, dm_core, output
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
     flags = parser(description="Generates an initial conditions file\
                                 for a galaxy cluster halo simulation.")
@@ -95,6 +94,7 @@ def init():
     args = flags.parse_args()
     gas_core = args.gas_core
     dm_core = args.dm_core
+    output = args.o
     if not (path.isfile("header.txt") and path.isfile("cluster_param.txt")):
         print "header.txt or cluster_param.txt missing."
         exit(0)
@@ -325,7 +325,7 @@ def write_input_file(cluster_data):
         ids = np.arange(1, N_dm + 1, 1)
         masses = masses_dm
         write_snapshot(n_part=[0, N_dm, 0, 0, 0, 0], from_text=False,
-                       data_list=[coords, vels, ids, masses])
+                       outfile=output, data_list=[coords, vels, ids, masses])
 
 
 if __name__ == '__main__':
