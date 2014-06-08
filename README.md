@@ -57,3 +57,8 @@ be ready for execution.
 
 Credits for Dr. Rubens Machado (http://www.astro.iag.usp.br/~rgmachado/),
 for the vital support and suggestions.
+
+## Disclaimer
+
+Feel free to use this code on your work, but please link this page
+in your paper.
