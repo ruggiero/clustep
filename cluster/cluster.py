@@ -63,8 +63,7 @@ def generate_cluster_with_gas():
     vels = set_velocities(radii_dm)
     print "calculating the temperatures"
     U = set_temperatures(radii_gas)
-    print "calculating the densities"
-    rho = set_densities(radii_gas)
+    rho = np.zeros(N_gas)
     print "writing output file..."
     return [coords, vels, U, rho]
 
@@ -297,13 +296,6 @@ def set_temperatures(radii_gas):
     for i, r in enumerate(radii_gas):
         temps[i] = interpolate(r, T_tabulated)
     return temps
-
-
-def set_densities(radii_gas):
-    rho = np.zeros(N_gas)
-    for i, r in enumerate(radii_gas):
-        rho[i] = gas_density(r)
-    return rho
 
 
 def write_input_file(cluster_data):
