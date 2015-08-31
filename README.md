@@ -60,5 +60,5 @@ for the vital support and suggestions.
 
 ## Disclaimer
 
-Feel free to use this code on your work, but please link this page
+Feel free to use this code in your work, but please link this page
 in your paper.
