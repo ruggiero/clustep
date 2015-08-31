@@ -52,7 +52,7 @@ be ready for execution.
 ## Author
 
     Rafael Ruggiero
-    pH.D student at Universidade de São Paulo (USP), Brazil
+    Ph.D student at Universidade de São Paulo (USP), Brazil
     Contact: rafael.ruggiero [at] usp.br
 
 Credits for Dr. Rubens Machado (http://www.astro.iag.usp.br/~rgmachado/),
