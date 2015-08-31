@@ -52,8 +52,8 @@ be ready for execution.
 ## Author
 
     Rafael Ruggiero
-    Undergraduate student at Universidade de São Paulo (USP), Brazil
-    Contact: bluewhale [at] cecm.usp.br
+    pH.D student at Universidade de São Paulo (USP), Brazil
+    Contact: rafael.ruggiero [at] usp.br
 
 Credits for Dr. Rubens Machado (http://www.astro.iag.usp.br/~rgmachado/),
 for the vital support and suggestions.
