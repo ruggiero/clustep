@@ -146,7 +146,7 @@ def gas_density(r):
 def set_positions():
     # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                  ((M_dm*40000) / 40401), M_dm, a_dm, dm_core)
+                                  (M_dm*0.9), M_dm, a_dm, dm_core)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
@@ -157,10 +157,10 @@ def set_positions():
     coords_dm = np.column_stack((xs, ys, zs))
     coords_dm = np.array(coords_dm, order='C')
     coords_dm.shape = (1, -1) # Linearizing the array.
-
+    print max(radii_dm)
     if(gas):
         radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas*40000) / 40401),
+                                       ((M_gas*0.9)),
                                        M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
@@ -260,7 +260,7 @@ def sample_velocity(radius, DF_tabulated):
     while(True):
         vx, vy, vz, v2 = opt.random_velocity(vesc)
         y = DFmax * nprand.rand()
-        if(y < interpolate(phi + 0.5*v2, DF_tabulated)):
+        if(y < interpolate(phi + 0.5*v2, DF_tabulated) and v2**0.5 < vesc):
             break
     return [vx, vy, vz]
 
