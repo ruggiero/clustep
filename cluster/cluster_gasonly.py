@@ -79,10 +79,11 @@ def gas_density(r):
         return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
+# Positions are restricted to the radius where 90% of the mass is
+# at, so particles don't go too far
 def set_positions():
     radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                   ((M_gas*40000) / 40401),
-                                   M_gas, a_gas, gas_core)
+                                   (M_gas*0.9), M_gas, a_gas, gas_core)
     thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
     phis = 2 * np.pi * nprand.sample(N_gas)
     xs = radii_gas * np.sin(thetas) * np.cos(phis)
