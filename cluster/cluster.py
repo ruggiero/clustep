@@ -94,9 +94,9 @@ def init():
                        action='store_true')
     flags.add_argument('--dm-only', help='Generates an initial conditions\
                        file containing only dark matter.', action='store_true')
-    flags.add_argument('--gas-only', help='No dark matter, only gas. The potential
-                                           of the dark matter profile supplied is
-                                           still used when calculating the
+    flags.add_argument('--gas-only', help='No dark matter, only gas. The potential\
+                                           of the dark matter profile supplied is\
+                                           still used when calculating the\
                                            temperatures.',
                        action='store_true')
     flags.add_argument('-o', help='The name of the output file.',
@@ -199,16 +199,16 @@ def set_positions():
 
 def set_velocities(radii_dm=None):
     vels = []
-    DF_tabulated = []
-    # This 0.99 avoids numerical problems.
-    for i in np.linspace(potential(0)*0.99, 0, 1000):
-        DF_tabulated.append([i, DF(i)])
-    DF_tabulated = np.array(DF_tabulated)
-    print "done with DF tabulation"
     if(gas):
         for i in np.arange(N_gas):
             vels.append([0.0, 0.0, 0.0])
     if(dm):
+        DF_tabulated = []
+        # This 0.99 avoids numerical problems.
+        for i in np.linspace(potential(0)*0.99, 0, 1000):
+            DF_tabulated.append([i, DF(i)])
+        DF_tabulated = np.array(DF_tabulated)
+        print "done with DF tabulation"
         for i in np.arange(len(radii_dm)):
             vels.append(sample_velocity(radii_dm[i], DF_tabulated))
             if(i % 1000 == 0):
