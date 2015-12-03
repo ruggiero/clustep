@@ -12,17 +12,17 @@
 ## Installation
 
 All the scripts can be executed without installation or compilation,
-except for cluster.py, which uses a custom Cython library that has to
+except for clustep.py, which uses a custom Cython library that has to
 be compiled. For that, just cd to /cluster and type 'make'. A new file,
-named optimized_funcions.so, will be created, and then cluster.py will
+named optimized_funcions.so, will be created, and then clustep.py will
 be ready for execution.
 
 
 ## Usage
 
-### cluster.py
+### clustep.py
 
-    cluster.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
+    clustep.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
 
     Generate an initial conditions file for a galaxy cluster halo simulation.
 
