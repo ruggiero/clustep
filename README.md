@@ -32,6 +32,9 @@ be ready for execution.
       --dm-core    The same, but for the dark matter.
       --dm-only    Generates an initial conditions file containing only dark
                    matter.
+      --gas-only   No dark matter, only gas. The potential of the dark matter
+                   profile supplied is still used when calculating the
+                   temperatures.
       -o init.dat  The name of the output file.
 
 ### profiles.py
