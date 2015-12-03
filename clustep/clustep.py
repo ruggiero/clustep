@@ -11,18 +11,7 @@ Here, the value for the gravitational constant G is such that the unit
 for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
 1.0 km/s.
 
-
-USAGE:
-
-clustep.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
-
-optional arguments:
-  -h, --help   show this help message and exit
-  --gas-core   Sets the density profile for the gas to have a core.
-  --dm-core    The same, but for the dark matter.
-  --dm-only    Generates an initial conditions file containing only dark
-               matter.
-  -o init.dat  The name of the output file.
+Run python galstep.py --help to see the available flags.
 
 """
 
@@ -92,12 +81,11 @@ def init():
                        gas to have a core.', action='store_true')
     flags.add_argument('--dm-core', help='The same, but for the dark matter.',
                        action='store_true')
-    flags.add_argument('--dm-only', help='Generates an initial conditions\
-                       file containing only dark matter.', action='store_true')
-    flags.add_argument('--gas-only', help='No dark matter, only gas. The potential\
-                                           of the dark matter profile supplied is\
-                                           still used when calculating the\
-                                           temperatures.',
+    flags.add_argument('--no-dm', help='No dark matter particles in the\
+                       initial conditions. The dark matter potential is\
+                       still used when calculating the gas temperatures',
+                       action='store_true')
+    flags.add_argument('--no-gas', help='No gas, only dark matter.',
                        action='store_true')
     flags.add_argument('-o', help='The name of the output file.',
                        metavar="init.dat", default="init.dat")
@@ -108,16 +96,16 @@ def init():
     if not (path.isfile("header.txt") and path.isfile("params_cluster.txt")):
         print "header.txt or params_cluster.txt missing."
         exit(0)
-    if args.dm_only:
-        if args.gas_only:
+    if args.no_dm:
+        if args.no_gas:
             print "Neither gas or dark matter were selected!"
             exit(0)
         else:
-            gas = False
-            dm = True
-    elif args.gas_only:
-        gas = True
-        dm = False
+            gas = True
+            dm = False
+    elif args.no_gas:
+        gas = False
+        dm = True
     else:
         gas = True
         dm = True

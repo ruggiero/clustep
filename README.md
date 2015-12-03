@@ -30,11 +30,10 @@ be ready for execution.
       -h, --help   show this help message and exit
       --gas-core   Sets the density profile for the gas to have a core.
       --dm-core    The same, but for the dark matter.
-      --dm-only    Generates an initial conditions file containing only dark
-                   matter.
-      --gas-only   No dark matter, only gas. The potential of the dark matter
-                   profile supplied is still used when calculating the
-                   temperatures.
+      --no-dm      No dark matter particles in the initial conditions. The dark
+                   matter potential is still used when calculating the gas
+                   temperatures
+      --no-gas     No gas, only dark matter.
       -o init.dat  The name of the output file.
 
 ### profiles.py
