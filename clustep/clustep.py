@@ -5,7 +5,7 @@ Script that generates a snapshot containing a galaxy cluster halo,
 with both dark matter and gas, each of which following a Dehnen density
 profile with either gamma equals 1 or 2. The number of particles in each
 of these, as well as the parameters a and M in the density profiles,
-are defined in the file params.txt (see example).
+are defined in the file params_cluster.txt (see example).
 
 Here, the value for the gravitational constant G is such that the unit
 for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
@@ -105,8 +105,8 @@ def init():
     gas_core = args.gas_core
     dm_core = args.dm_core
     output = args.o
-    if not (path.isfile("header.txt") and path.isfile("params.txt")):
-        print "header.txt or params.txt missing."
+    if not (path.isfile("header.txt") and path.isfile("params_cluster.txt")):
+        print "header.txt or params_cluster.txt missing."
         exit(0)
     if args.dm_only:
         if args.gas_only:
@@ -121,7 +121,7 @@ def init():
     else:
         gas = True
         dm = True
-    vars_ = process_input("params.txt")
+    vars_ = process_input("params_cluster.txt")
     M_dm, a_dm, N_dm = (float(i[0]) for i in vars_[0:3])
     if(gas):
         M_gas, a_gas, N_gas = (float(i[0]) for i in vars_[3:6])
