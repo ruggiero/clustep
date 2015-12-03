@@ -50,6 +50,10 @@ be ready for execution.
       --gas-core  Sets the density profile for the gas to have a core.
       --dm-core   The same, but for the dark matter.
 
+Some analysis scripts are also included, you can try these out. I haven't
+documented them because they are changed all the time and aren't all that
+well written as of now.
+
 
 ## Author
 
