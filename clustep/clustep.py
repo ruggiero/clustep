@@ -83,7 +83,7 @@ def init():
                        action='store_true')
     flags.add_argument('--no-dm', help='No dark matter particles in the\
                        initial conditions. The dark matter potential is\
-                       still used when calculating the gas temperatures',
+                       still used when calculating the gas temperatures.',
                        action='store_true')
     flags.add_argument('--no-gas', help='No gas, only dark matter.',
                        action='store_true')

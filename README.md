@@ -32,7 +32,7 @@ be ready for execution.
       --dm-core    The same, but for the dark matter.
       --no-dm      No dark matter particles in the initial conditions. The dark
                    matter potential is still used when calculating the gas
-                   temperatures
+                   temperatures.
       --no-gas     No gas, only dark matter.
       -o init.dat  The name of the output file.
 
