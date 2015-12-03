@@ -159,6 +159,7 @@ def gas_density(r):
 
 
 def set_positions():
+<<<<<<< HEAD
     # The factor 0.9 cuts the profile at 90% of the mass
     if(dm):
         radii_dm = inverse_cumulative(nprand.sample(N_dm) *
@@ -176,6 +177,25 @@ def set_positions():
         print "maximum radius (dm): %f" % max(radii_dm)
     if(gas):
         radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * 0.9),
+=======
+    # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
+    radii_dm = inverse_cumulative(nprand.sample(N_dm) *
+                                  (M_dm*0.9), M_dm, a_dm, dm_core)
+    thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
+    phis = 2 * np.pi * nprand.sample(N_dm)
+    xs = radii_dm * np.sin(thetas) * np.cos(phis)
+    ys = radii_dm * np.sin(thetas) * np.sin(phis)
+    zs = radii_dm * np.cos(thetas)
+
+    # Older NumPy versions freak out without this line.
+    coords_dm = np.column_stack((xs, ys, zs))
+    coords_dm = np.array(coords_dm, order='C')
+    coords_dm.shape = (1, -1) # Linearizing the array.
+    print max(radii_dm)
+    if(gas):
+        radii_gas = inverse_cumulative(nprand.sample(N_gas) *
+                                       ((M_gas*0.9)),
+>>>>>>> 4e453f9a58bf0cc5ffe706377661196530e5bb8f
                                        M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
@@ -282,8 +302,7 @@ def sample_velocity(radius, DF_tabulated):
         vx, vy, vz, v2 = opt.random_velocity(vesc)
         y = DFmax * nprand.rand()
         # We don't want particles unbound to the potential
-        if(y < interpolate(phi + 0.5*v2, DF_tabulated) and
-            v2**0.5 < 0.95*vesc):
+        if(y < interpolate(phi + 0.5*v2, DF_tabulated) and v2**0.5 < 0.95*vesc):
             break
     return [vx, vy, vz]
 
