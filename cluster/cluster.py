@@ -49,36 +49,42 @@ G = 43007.1
 
 def main():
     init()
-    if(gas):
-        cluster_data = generate_cluster_with_gas()
-    else:
-        cluster_data = generate_cluster_without_gas()
+    cluster_data = generate_cluster()
     write_input_file(cluster_data)
 
 
-def generate_cluster_with_gas():
-    print "defining the positions"
-    coords, radii_gas, radii_dm = set_positions()
-    print "defining the velocities"
-    vels = set_velocities(radii_dm)
-    print "calculating the temperatures"
-    U = set_temperatures(radii_gas)
-    rho = np.zeros(N_gas)
-    print "writing output file..."
-    return [coords, vels, U, rho]
-
-
-def generate_cluster_without_gas():
-    print "defining the positions"
-    coords, radii_dm = set_positions()
-    print "defining the velocities"
-    vels = set_velocities(radii_dm)
-    print "writing output file..."
-    return [coords, vels]
+def generate_cluster():
+    if(gas):
+        if(dm):
+            print "defining the positions"
+            coords, radii_gas, radii_dm = set_positions()
+            print "defining the velocities"
+            vels = set_velocities(radii_dm)
+            print "calculating the temperatures"
+            U = set_temperatures(radii_gas)
+            rho = np.zeros(N_gas)
+            print "writing output file..."
+            return [coords, vels, U, rho]
+        else:
+            print "defining the positions"
+            coords, radii_gas = set_positions()
+            vels = set_velocities()
+            print "calculating the temperatures"
+            U = set_temperatures(radii_gas)
+            rho = np.zeros(N_gas)
+            print "writing output file..."
+            return [coords, vels, U, rho]
+    else:
+        print "defining the positions"
+        coords, radii_dm = set_positions()
+        print "defining the velocities"
+        vels = set_velocities(radii_dm)
+        print "writing output file..."
+        return [coords, vels]
 
 
 def init():
-    global gas, gas_core, dm_core, output
+    global gas, dm, gas_core, dm_core, output
     global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
     flags = parser(description="Generates an initial conditions file\
                                 for a galaxy cluster halo simulation.")
@@ -88,6 +94,11 @@ def init():
                        action='store_true')
     flags.add_argument('--dm-only', help='Generates an initial conditions\
                        file containing only dark matter.', action='store_true')
+    flags.add_argument('--gas-only', help='No dark matter, only gas. The potential
+                                           of the dark matter profile supplied is
+                                           still used when calculating the
+                                           temperatures.',
+                       action='store_true')
     flags.add_argument('-o', help='The name of the output file.',
                        metavar="init.dat", default="init.dat")
     args = flags.parse_args()
@@ -98,13 +109,18 @@ def init():
         print "header.txt or cluster_param.txt missing."
         exit(0)
     if args.dm_only:
-        if args.gas_core:
-            print "Please decide whether you want gas or not."
+        if args.gas_only:
+            print "Neither gas or dark matter were selected!"
             exit(0)
         else:
             gas = False
+            dm = True
+    elif args.gas_only:
+        gas = True
+        dm = False
     else:
         gas = True
+        dm = True
     vars_ = process_input("cluster_param.txt")
     M_dm, a_dm, N_dm = (float(i[0]) for i in vars_[0:3])
     if(gas):
@@ -122,13 +138,12 @@ def inverse_cumulative(Mc, M, a, core):
 
 
 def potential(r):
+    phi = 0
     if(gas):
         if(gas_core):
-            phi = -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
+            phi -= -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
         else:
-            phi = -(G*M_gas) / (r+a_gas)
-    else:
-        phi = 0
+            phi -= -(G*M_gas) / (r+a_gas)
     if(dm_core):
         phi -= (G*M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
     else:
@@ -144,23 +159,23 @@ def gas_density(r):
 
 
 def set_positions():
-    # The factor M * 200^2 / 201^2 restricts the radius to 200 * a.
-    radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                  ((M_dm*40000) / 40401), M_dm, a_dm, dm_core)
-    thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
-    phis = 2 * np.pi * nprand.sample(N_dm)
-    xs = radii_dm * np.sin(thetas) * np.cos(phis)
-    ys = radii_dm * np.sin(thetas) * np.sin(phis)
-    zs = radii_dm * np.cos(thetas)
+    # The factor 0.9 cuts the profile at 90% of the mass
+    if(dm):
+        radii_dm = inverse_cumulative(nprand.sample(N_dm) *
+                                     (M_dm * 0.9), M_dm, a_dm, dm_core)
+        thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
+        phis = 2 * np.pi * nprand.sample(N_dm)
+        xs = radii_dm * np.sin(thetas) * np.cos(phis)
+        ys = radii_dm * np.sin(thetas) * np.sin(phis)
+        zs = radii_dm * np.cos(thetas)
 
-    # Older NumPy versions freak out without this line.
-    coords_dm = np.column_stack((xs, ys, zs))
-    coords_dm = np.array(coords_dm, order='C')
-    coords_dm.shape = (1, -1) # Linearizing the array.
-
+        # Older NumPy versions freak out without this line.
+        coords_dm = np.column_stack((xs, ys, zs))
+        coords_dm = np.array(coords_dm, order='C')
+        coords_dm.shape = (1, -1) # Linearizing the array.
+        print "maximum radius (dm): %f" % max(radii_dm)
     if(gas):
-        radii_gas = inverse_cumulative(nprand.sample(N_gas) *
-                                       ((M_gas*40000) / 40401),
+        radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * 0.9),
                                        M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
@@ -171,13 +186,18 @@ def set_positions():
 
         coords_gas = np.array(coords_gas, order='C')
         coords_gas.shape = (1, -1) 
-        coords_total = np.concatenate((coords_gas[0], coords_dm[0]))
-        return coords_total, radii_gas, radii_dm
+        print "maximum radius (gas): %f" % max(radii_gas)
+    if(gas):
+        if(dm):
+            coords_total = np.concatenate((coords_gas[0], coords_dm[0]))
+            return coords_total, radii_gas, radii_dm
+        else:
+            return coords_gas[0], radii_gas
     else:
         return coords_dm[0], radii_dm
 
 
-def set_velocities(radii_dm):
+def set_velocities(radii_dm=None):
     vels = []
     DF_tabulated = []
     # This 0.99 avoids numerical problems.
@@ -188,10 +208,11 @@ def set_velocities(radii_dm):
     if(gas):
         for i in np.arange(N_gas):
             vels.append([0.0, 0.0, 0.0])
-    for i in np.arange(len(radii_dm)):
-        vels.append(sample_velocity(radii_dm[i], DF_tabulated))
-        if(i % 1000 == 0):
-            print 'set velocity', i, 'of', N_dm
+    if(dm):
+        for i in np.arange(len(radii_dm)):
+            vels.append(sample_velocity(radii_dm[i], DF_tabulated))
+            if(i % 1000 == 0):
+                print 'set velocity', i, 'of', N_dm
     vels = np.array(vels, order='C')
     vel_COM = sum(vels) # The velocity of the center of mass.
     if(gas):
@@ -260,7 +281,9 @@ def sample_velocity(radius, DF_tabulated):
     while(True):
         vx, vy, vz, v2 = opt.random_velocity(vesc)
         y = DFmax * nprand.rand()
-        if(y < interpolate(phi + 0.5*v2, DF_tabulated)):
+        # We don't want particles unbound to the potential
+        if(y < interpolate(phi + 0.5*v2, DF_tabulated) and
+            v2**0.5 < 0.95*vesc):
             break
     return [vx, vy, vz]
 
@@ -301,20 +324,28 @@ def set_temperatures(radii_gas):
 def write_input_file(cluster_data):
     coords = cluster_data[0]
     vels = cluster_data[1]
-    masses_dm = np.empty(N_dm)
-    masses_dm.fill(M_dm / N_dm)
     if(gas):
-        ids = np.arange(1, N_gas + N_dm + 1, 1)
         U = cluster_data[2]
         rho = cluster_data[3]
+        smooths = np.zeros(N_gas)
         masses_gas = np.empty(N_gas)
         masses_gas.fill(M_gas / N_gas)
-        masses = np.concatenate((masses_gas, masses_dm))
-        smooths = np.zeros(N_gas)
-        write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], from_text=False,
-                       data_list=[coords, vels, ids, masses, U, rho, smooths])
+        if(dm):
+            masses_dm = np.empty(N_dm)
+            masses_dm.fill(M_dm / N_dm)
+            masses = np.concatenate((masses_gas, masses_dm))
+            ids = np.arange(1, N_gas + N_dm + 1)
+            write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], from_text=False,
+                           data_list=[coords, vels, ids, masses, U, rho, smooths])
+        else:
+            masses = masses_gas
+            ids = np.arange(1, N_gas + 1)
+            write_snapshot(n_part=[N_gas, 0, 0, 0, 0, 0], from_text=False,
+                           data_list=[coords, vels, ids, masses, U, rho, smooths])
     else:
-        ids = np.arange(1, N_dm + 1, 1)
+        ids = np.arange(1, N_dm + 1)
+        masses_dm = np.empty(N_dm)
+        masses_dm.fill(M_dm / N_dm)
         masses = masses_dm
         write_snapshot(n_part=[0, N_dm, 0, 0, 0, 0], from_text=False,
                        outfile=output, data_list=[coords, vels, ids, masses])
