@@ -330,11 +330,13 @@ def write_input_file(cluster_data):
             masses = np.concatenate((masses_gas, masses_dm))
             ids = np.arange(1, N_gas + N_dm + 1)
             write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], from_text=False,
+                           outfile=output,
                            data_list=[coords, vels, ids, masses, U, rho, smooths])
         else:
             masses = masses_gas
             ids = np.arange(1, N_gas + 1)
             write_snapshot(n_part=[N_gas, 0, 0, 0, 0, 0], from_text=False,
+                           outfile=output,
                            data_list=[coords, vels, ids, masses, U, rho, smooths])
     else:
         ids = np.arange(1, N_dm + 1)
