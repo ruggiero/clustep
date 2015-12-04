@@ -114,7 +114,7 @@ def init():
     M_dm, a_dm, N_dm = (float(i[0]) for i in vars_[0:3])
     if(gas):
         M_gas, a_gas, N_gas = (float(i[0]) for i in vars_[3:6])
-    max_radius = float(vars_[6])
+    max_radius = float(vars_[6][0])
 
 
 # Inverse cumulative mass function. Depends on both the parameters M and
