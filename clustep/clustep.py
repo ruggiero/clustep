@@ -309,7 +309,6 @@ def set_temperatures(radii_gas):
     # This 0.99 avoids numerical problems.
     for r in np.logspace(-1, np.log10(200*a_gas), 1000):
         T_tabulated.append([r, temperature(r)])
-        print T_tabulated[-1][0], T_tabulated[-1][1]
     T_tabulated = np.array(T_tabulated)
     for i, r in enumerate(radii_gas):
         temps[i] = interpolate(r, T_tabulated)
