@@ -125,6 +125,13 @@ def inverse_cumulative(Mc, M, a, core):
         return (a * ((Mc*M)**0.5 + Mc)) / (M-Mc)
 
 
+def cumulative(r, M, a, core):
+    if(core):
+        return M*r**3/(r+a)**3
+    else:
+        return M*r**2/(r+a)**2
+
+
 def potential(r):
     phi = 0
     if(gas):
@@ -146,11 +153,12 @@ def gas_density(r):
         return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
+# the factor variable restricts the radius to 4000 kpc
 def set_positions():
-    # The factor 0.9 cuts the profile at 90% of the mass
     if(dm):
+        factor = cumulative(4000, M_dm, a_dm, dm_core)/M_dm
         radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                                     (M_dm * 0.9), M_dm, a_dm, dm_core)
+                                     (M_dm * factor), M_dm, a_dm, dm_core)
         thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
         phis = 2 * np.pi * nprand.sample(N_dm)
         xs = radii_dm * np.sin(thetas) * np.cos(phis)
@@ -161,9 +169,9 @@ def set_positions():
         coords_dm = np.column_stack((xs, ys, zs))
         coords_dm = np.array(coords_dm, order='C')
         coords_dm.shape = (1, -1) # Linearizing the array.
-        print "maximum radius (dm): %f" % max(radii_dm)
     if(gas):
-        radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * 0.9),
+        factor = cumulative(4000, M_gas, a_gas, gas_core)/M_gas
+        radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * factor),
                                        M_gas, a_gas, gas_core)
         thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
         phis = 2 * np.pi * nprand.sample(N_gas)
@@ -174,7 +182,6 @@ def set_positions():
 
         coords_gas = np.array(coords_gas, order='C')
         coords_gas.shape = (1, -1) 
-        print "maximum radius (gas): %f" % max(radii_gas)
     if(gas):
         if(dm):
             coords_total = np.concatenate((coords_gas[0], coords_dm[0]))
@@ -302,6 +309,7 @@ def set_temperatures(radii_gas):
     # This 0.99 avoids numerical problems.
     for r in np.logspace(-1, np.log10(200*a_gas), 1000):
         T_tabulated.append([r, temperature(r)])
+        print T_tabulated[-1][0], T_tabulated[-1][1]
     T_tabulated = np.array(T_tabulated)
     for i, r in enumerate(radii_gas):
         temps[i] = interpolate(r, T_tabulated)
