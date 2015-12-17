@@ -138,13 +138,13 @@ def potential(r):
     phi = 0
     if(gas):
         if(gas_core):
-            phi -= -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
+            phi += -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
         else:
-            phi -= -(G*M_gas) / (r+a_gas)
+            phi += -(G*M_gas) / (r+a_gas)
     if(dm_core):
-        phi -= (G*M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
+        phi += -(G*M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
     else:
-        phi -= (G*M_dm) / (r + a_dm)
+        phi += -(G*M_dm) / (r + a_dm)
     return phi
 
 
