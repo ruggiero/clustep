@@ -14,7 +14,7 @@ from libc.math cimport asin, sqrt, pow, M_PI, log
 import numpy.random as nprand
 
 
-cdef double G = 43007.1
+cdef double G = 44920.0
 
 # The integrand in the integral for the DF, in case the density profile for the
 # the gas is cuspy, while the one for the dark matter has a core. All the following
