@@ -111,9 +111,11 @@ def init():
         gas = True
         dm = True
     vars_ = process_input("params_cluster.txt")
-    M_dm, a_dm, N_dm = (float(i[0]) for i in vars_[0:3])
+    M_dm, a_dm = (float(i[0]) for i in vars_[0:2])
+    N_dm = int(vars_[2][0])
     if(gas):
-        M_gas, a_gas, N_gas = (float(i[0]) for i in vars_[3:6])
+        M_gas, a_gas = (float(i[0]) for i in vars_[3:5])
+        N_gas = int(vars_[5][0])
     max_radius = float(vars_[6][0])
 
 
