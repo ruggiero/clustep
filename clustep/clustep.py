@@ -33,7 +33,7 @@ syspath.append(path.join(path.dirname(__file__), '..', 'misc'))
 from units import temp_to_internal_energy
 
 
-G = 43007.1
+G = 44920.0
 
 
 def main():
