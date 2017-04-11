@@ -55,6 +55,11 @@ documented them because they are changed all the time and aren't all that
 well written as of now.
 
 
+## Works which used this code
+
+* [Ruggiero & Lima Neto (2017)](http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1703.08550)
+
+
 ## Author
 
     Rafael Ruggiero
