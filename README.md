@@ -22,14 +22,18 @@ be ready for execution.
 
 ### clustep.py
 
-    clustep.py [-h] [--gas-core] [--dm-core] [--dm-only] [-o init.dat]
-
-    Generate an initial conditions file for a galaxy cluster halo simulation.
-
-    Optional arguments:
+    usage: clustep.py [-h] [--gas-core] [--dm-core] [--no-dm] [--no-gas]
+                      [-o init.dat]
+    
+    Generates an initial conditions file for a galaxy cluster halo simulation.
+    
+    optional arguments:
       -h, --help   show this help message and exit
-      --gas-core   Sets the density profile for the gas to have a core.
-      --dm-core    The same, but for the dark matter.
+      --gas-core   Sets gamma=0 in the Dehnen density profile assigned to the gas
+                   component, causing it to feature a central core. By default
+                   gamma=1, which is equivalent to a Hernquist density profile.
+                   See 1993MNRAS.265..250D and 1990ApJ...356..359H.
+      --dm-core    Exactly the same as above, but for the dark matter component.
       --no-dm      No dark matter particles in the initial conditions. The dark
                    matter potential is still used when calculating the gas
                    temperatures.
