@@ -78,10 +78,14 @@ def init():
     global max_radius
     flags = parser(description="Generates an initial conditions file\
                                 for a galaxy cluster halo simulation.")
-    flags.add_argument('--gas-core', help='Sets the density profile for the\
-                       gas to have a core.', action='store_true')
-    flags.add_argument('--dm-core', help='The same, but for the dark matter.',
+    flags.add_argument('--gas-core', help='Sets gamma=0 in the Dehnen density\
+                       profile assigned to the gas component, causing it to\
+                       feature a central core. By default gamma=1, which is\
+                       equivalent to a Hernquist density profile. See Dehnen\
+                       (1993) and Hernquist (1990).', 
                        action='store_true')
+    flags.add_argument('--dm-core', help='Exactly the same as above, but for\
+                       the dark matter component.', action='store_true')
     flags.add_argument('--no-dm', help='No dark matter particles in the\
                        initial conditions. The dark matter potential is\
                        still used when calculating the gas temperatures.',
