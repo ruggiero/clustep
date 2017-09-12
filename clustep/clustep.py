@@ -81,8 +81,8 @@ def init():
     flags.add_argument('--gas-core', help='Sets gamma=0 in the Dehnen density\
                        profile assigned to the gas component, causing it to\
                        feature a central core. By default gamma=1, which is\
-                       equivalent to a Hernquist density profile. See Dehnen\
-                       (1993) and Hernquist (1990).', 
+                       equivalent to a Hernquist density profile. See\
+                       1993MNRAS.265..250D and 1990ApJ...356..359H.',
                        action='store_true')
     flags.add_argument('--dm-core', help='Exactly the same as above, but for\
                        the dark matter component.', action='store_true')
