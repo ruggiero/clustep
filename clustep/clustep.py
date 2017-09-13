@@ -21,6 +21,7 @@ from sys import path as syspath
 from bisect import bisect_left
 from os import path
 from argparse import ArgumentParser as parser
+from ConfigParser import ConfigParser
 
 import numpy as np
 import numpy.random as nprand
@@ -114,13 +115,16 @@ def init():
     else:
         gas = True
         dm = True
-    vars_ = process_input("params_cluster.txt")
-    M_dm, a_dm = (float(i[0]) for i in vars_[0:2])
-    N_dm = int(vars_[2][0])
+    config = ConfigParser()
+    config.read("params_cluster.txt")
+    M_dm = config.getfloat('dark_matter', 'M_dm')
+    a_dm = config.getfloat('dark_matter', 'a_dm')
+    N_dm = config.getint('dark_matter', 'N_dm')
     if(gas):
-        M_gas, a_gas = (float(i[0]) for i in vars_[3:5])
-        N_gas = int(vars_[5][0])
-    max_radius = float(vars_[6][0])
+        M_gas = config.getfloat('gas', 'M_gas')
+        a_gas = config.getfloat('gas', 'a_gas')
+        N_gas = config.getint('gas', 'N_gas')
+    max_radius = config.getfloat('global', 'truncation_radius')
 
 
 # Inverse cumulative mass function. Depends on both the parameters M and
