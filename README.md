@@ -70,7 +70,7 @@ well written as of now.
     Ph.D student at Universidade de São Paulo (USP), Brazil
     Contact: rafael.ruggiero [at] usp.br
 
-Credits for Dr. Rubens Machado (http://www.astro.iag.usp.br/~rgmachado/),
+Credits for Prof. Dr. Rubens Machado (http://paginapessoal.utfpr.edu.br/rubensmachado),
 for the vital support and suggestions.
 
 ## Disclaimer
