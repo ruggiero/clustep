@@ -1,5 +1,5 @@
 ## Required libraries
-(and the names of the packages in Ubuntu)
+(and the names of the packages in Debian-like systems)
  
 * NumPy (python-numpy)
 * SciPy (python-scipy)
