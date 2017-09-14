@@ -11,7 +11,7 @@ Here, the value for the gravitational constant G is such that the unit
 for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
 1.0 km/s.
 
-Run python galstep.py --help to see the available flags.
+Run python clustep.py --help to see the available flags.
 
 """
 
