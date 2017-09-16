@@ -3,9 +3,9 @@
 Script that generates a snapshot in the GADGET-2 format containing a galaxy cluster
 halo, with a dark matter component and a gas component (representing
 the ICM) in equilibrium with each other. Each component follows a Dehnen
-density profile ([Dehnen (1993)][http://adsabs.harvard.edu/abs/1993MNRAS.265..250D]),
+density profile ([Dehnen (1993)](http://adsabs.harvard.edu/abs/1993MNRAS.265..250D)),
 and the parameter gamma can be set to either 0 or 1 for each. If gamma=1,
-then the profile corresponds to a Hernquist profile (([Hernquist (1990)][http://adsabs.harvard.edu/abs/1990ApJ...356..359H]),
+then the profile corresponds to a Hernquist profile (([Hernquist (1990)](http://adsabs.harvard.edu/abs/1990ApJ...356..359H)),
 which is a "cuspy" profile very similar to the cosmological NFW profile.
 If gamma=0, then the profile exhibits a central "core". See the "Usage"
 section below for details.
