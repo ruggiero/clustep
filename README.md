@@ -5,10 +5,10 @@ halo in equilibrium. The halo is made of a dark matter component and a gas compo
 with the latter representing the ICM. Each of these components follows a Dehnen
 density profile ([Dehnen 1993](http://adsabs.harvard.edu/abs/1993MNRAS.265..250D)),
 with gamma=0 or gamma=1. If gamma=1, then the profile corresponds to a Hernquist
-profile (([Hernquist 1990](http://adsabs.harvard.edu/abs/1990ApJ...356..359H)),
-which is a cuspy profile very similar to the cosmological NFW profile.
+profile ([Hernquist 1990](http://adsabs.harvard.edu/abs/1990ApJ...356..359H)),
+which features a central cusp and is very similar to the cosmological NFW profile.
 If gamma=0, then the profile exhibits a central core. See the Usage
-section below for details.
+section below for details on how to choose between each of these.
 
 The value for the gravitational constant G used in this code is such that
 the unit for length is 1.0 kpc, for mass 1.0e10 solar masses, and for
