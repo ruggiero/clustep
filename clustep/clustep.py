@@ -1,21 +1,3 @@
-"""
-DESCRIPTION:
-
-Script that generates a snapshot containing a galaxy cluster halo,
-with both dark matter and gas, each of which following a Dehnen density
-profile with either gamma equals 1 or 2. The number of particles in each
-of these, as well as the parameters a and M in the density profiles,
-are defined in the file params_cluster.ini (see example).
-
-Here, the value for the gravitational constant G is such that the unit
-for length is 1.0 kpc, for mass 1.0e10 solar masses, and for velocity
-1.0 km/s.
-
-Run python clustep.py --help to see the available flags.
-
-"""
-
-
 from sys import exit
 from sys import path as syspath
 from bisect import bisect_left

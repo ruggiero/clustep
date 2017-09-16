@@ -1,3 +1,21 @@
+## Description
+
+Script that generates a snapshot in the GADGET-2 format containing a galaxy cluster
+halo, with a dark matter component and a gas component (representing
+the ICM) in equilibrium with each other. Each component follows a Dehnen
+density profile ([Dehnen (1993)][http://adsabs.harvard.edu/abs/1993MNRAS.265..250D]),
+and the parameter gamma can be set to either 0 or 1 for each. If gamma=1,
+then the profile corresponds to a Hernquist profile (([Hernquist (1990)][http://adsabs.harvard.edu/abs/1990ApJ...356..359H]),
+which is a "cuspy" profile very similar to the cosmological NFW profile.
+If gamma=0, then the profile exhibits a central "core". See the "Usage"
+section below for details.
+
+The value for the gravitational constant G used in this code is such that
+the unit for length is 1.0 kpc, for mass 1.0e10 solar masses, and for
+velocity 1.0 km/s. This is the default for GADGET-2, and works out of the
+box in RAMSES using the [DICE patch](https://bitbucket.org/vperret/dice/wiki/RAMSES%20simulation).
+
+
 ## Required libraries
 (and the names of the packages in Debian-like systems)
  
@@ -11,16 +29,15 @@
 
 ## Installation
 
-All the scripts can be executed without installation or compilation,
-except for clustep.py, which uses a custom Cython library that has to
-be compiled. For that, just cd to /cluster and type 'make'. A new file,
-named optimized_funcions.so, will be created, and then clustep.py will
-be ready for execution.
+This code doesn't need to be installed, but a custom Cython
+library which is included has to be compiled. For that, just cd to
+/cluster and type 'make'. A new file, named optimized_funcions.so,
+will be created, and then clustep.py will be ready for execution.
 
 
 ## Usage
 
-### clustep.py
+You can run `python clustep.py --help` to see the message below. 
 
     usage: clustep.py [-h] [--gas-core] [--dm-core] [--no-dm] [--no-gas]
                       [-o init.dat]
@@ -37,26 +54,13 @@ be ready for execution.
       --no-dm      No dark matter particles in the initial conditions. The dark
                    matter potential is still used when calculating the gas
                    temperatures.
-      --no-gas     No gas, only dark matter.
+      --no-gas     Gas is completely ignored, and only dark matter is included.
       -o init.dat  The name of the output file.
 
-### profiles.py
 
-    profiles.py [-h] [--gas-core] [--dm-core] file.dat
-
-    Plots stuff.
-
-    positional arguments:
-      file.dat    The name of the input file.
-
-    optional arguments:
-      -h, --help  show this help message and exit
-      --gas-core  Sets the density profile for the gas to have a core.
-      --dm-core   The same, but for the dark matter.
-
-Some analysis scripts are also included, you can try these out. I haven't
-documented them because they are changed all the time and aren't all that
-well written as of now.
+Some analysis scripts are also included in the analysis/ folder, you can try
+these out. I haven't documented them because they are changed all the time and
+aren't all that well written as of now.
 
 
 ## Works which used this code
