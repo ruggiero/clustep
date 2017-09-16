@@ -1,19 +1,19 @@
 ## Description
 
 Script that generates a snapshot in the GADGET-2 format containing a galaxy cluster
-halo, with a dark matter component and a gas component (representing
-the ICM) in equilibrium with each other. Each component follows a Dehnen
-density profile ([Dehnen (1993)](http://adsabs.harvard.edu/abs/1993MNRAS.265..250D)),
-and the parameter gamma can be set to either 0 or 1 for each. If gamma=1,
-then the profile corresponds to a Hernquist profile (([Hernquist (1990)](http://adsabs.harvard.edu/abs/1990ApJ...356..359H)),
-which is a "cuspy" profile very similar to the cosmological NFW profile.
-If gamma=0, then the profile exhibits a central "core". See the "Usage"
+halo in equilibrium. The halo is made of a dark matter component and a gas component,
+with the latter representing the ICM. Each of these components follows a Dehnen
+density profile ([Dehnen 1993](http://adsabs.harvard.edu/abs/1993MNRAS.265..250D)),
+with gamma=0 or gamma=1. If gamma=1, then the profile corresponds to a Hernquist
+profile (([Hernquist 1990](http://adsabs.harvard.edu/abs/1990ApJ...356..359H)),
+which is a cuspy profile very similar to the cosmological NFW profile.
+If gamma=0, then the profile exhibits a central core. See the Usage
 section below for details.
 
 The value for the gravitational constant G used in this code is such that
 the unit for length is 1.0 kpc, for mass 1.0e10 solar masses, and for
 velocity 1.0 km/s. This is the default for GADGET-2, and works out of the
-box in RAMSES using the [DICE patch](https://bitbucket.org/vperret/dice/wiki/RAMSES%20simulation).
+box in RAMSES with the [DICE patch](https://bitbucket.org/vperret/dice/wiki/RAMSES%20simulation).
 
 
 ## Required libraries
@@ -31,8 +31,8 @@ box in RAMSES using the [DICE patch](https://bitbucket.org/vperret/dice/wiki/RAM
 
 This code doesn't need to be installed, but a custom Cython
 library which is included has to be compiled. For that, just cd to
-/cluster and type 'make'. A new file, named optimized_funcions.so,
-will be created, and then clustep.py will be ready for execution.
+`/cluster` and run `make`. A new file, named `optimized_funcions.so`,
+will be created, and then `clustep.py` will be ready for execution.
 
 
 ## Usage
@@ -58,7 +58,7 @@ You can run `python clustep.py --help` to see the message below.
       -o init.dat  The name of the output file.
 
 
-Some analysis scripts are also included in the analysis/ folder, you can try
+Some analysis scripts are also included in the `analysis/` folder, you can try
 these out. I haven't documented them because they are changed all the time and
 aren't all that well written as of now.
 
