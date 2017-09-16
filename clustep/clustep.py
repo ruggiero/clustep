@@ -81,8 +81,8 @@ def init():
   gas_core = args.gas_core
   dm_core = args.dm_core
   output = args.o
-  if not (path.isfile("header.txt") and path.isfile("params_cluster.txt")):
-    print "header.txt or params_cluster.txt missing."
+  if not (path.isfile("header.txt") and path.isfile("params_cluster.ini")):
+    print "header.txt or params_cluster.ini missing."
     exit(0)
   if args.no_dm:
     if args.no_gas:
