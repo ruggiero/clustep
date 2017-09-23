@@ -81,8 +81,8 @@ def init():
   gas_core = args.gas_core
   dm_core = args.dm_core
   output = args.o
-  if not (path.isfile("header.txt") and path.isfile("params_cluster.ini")):
-    print "header.txt or params_cluster.ini missing."
+  if not (path.isfile("header.txt") and path.isfile("cluster_params.ini")):
+    print "header.txt or cluster_params.ini missing."
     exit(0)
   if args.no_dm:
     if args.no_gas:
@@ -98,7 +98,7 @@ def init():
     gas = True
     dm = True
   config = ConfigParser()
-  config.read("params_cluster.ini")
+  config.read("cluster_params.ini")
   M_dm = config.getfloat('dark_matter', 'M_dm')
   a_dm = config.getfloat('dark_matter', 'a_dm')
   N_dm = config.getint('dark_matter', 'N_dm')

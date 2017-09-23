@@ -37,6 +37,7 @@ will be created, and then `clustep.py` will be ready for execution.
 ## Usage
 
 You can run `python clustep.py --help` to see the message below. 
+Please check out the `cluster_params.ini` file to see the available free parameters.
 
     usage: clustep.py [-h] [--gas-core] [--dm-core] [--no-dm] [--no-gas]
                       [-o init.dat]
