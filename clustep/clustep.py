@@ -57,7 +57,7 @@ def generate_cluster():
 
 def init():
   global gas, dm, gas_core, dm_core, output
-  global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas
+  global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas, Z
   global max_radius
   flags = parser(description="Generates an initial conditions file\
                 for a galaxy cluster halo simulation.")
@@ -106,6 +106,7 @@ def init():
     M_gas = config.getfloat('gas', 'M_gas')
     a_gas = config.getfloat('gas', 'a_gas')
     N_gas = config.getint('gas', 'N_gas')
+    Z = config.getfloat('gas', 'Z')
   max_radius = config.getfloat('global', 'truncation_radius')
 
 
@@ -318,27 +319,27 @@ def write_input_file(cluster_data):
     smooths = np.zeros(N_gas)
     masses_gas = np.empty(N_gas)
     masses_gas.fill(M_gas / N_gas)
+    Zs = np.zeros(N_gas)
+    Zs.fill(Z)
     if(dm):
       masses_dm = np.empty(N_dm)
       masses_dm.fill(M_dm / N_dm)
       masses = np.concatenate((masses_gas, masses_dm))
       ids = np.arange(1, N_gas + N_dm + 1)
-      write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], from_text=False,
-             outfile=output,
-             data_list=[coords, vels, ids, masses, U, rho, smooths])
+      write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], outfile=output,
+             data_list=[coords, vels, ids, masses, U, rho, smooths, Zs])
     else:
       masses = masses_gas
       ids = np.arange(1, N_gas + 1)
-      write_snapshot(n_part=[N_gas, 0, 0, 0, 0, 0], from_text=False,
-             outfile=output,
-             data_list=[coords, vels, ids, masses, U, rho, smooths])
+      write_snapshot(n_part=[N_gas, 0, 0, 0, 0, 0], outfile=output,
+             data_list=[coords, vels, ids, masses, U, rho, smooths, Zs])
   else:
     ids = np.arange(1, N_dm + 1)
     masses_dm = np.empty(N_dm)
     masses_dm.fill(M_dm / N_dm)
     masses = masses_dm
-    write_snapshot(n_part=[0, N_dm, 0, 0, 0, 0], from_text=False,
-           outfile=output, data_list=[coords, vels, ids, masses])
+    write_snapshot(n_part=[0, N_dm, 0, 0, 0, 0], outfile=output, 
+            data_list=[coords, vels, ids, masses])
 
 
 if __name__ == '__main__':

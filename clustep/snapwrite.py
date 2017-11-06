@@ -1,25 +1,3 @@
-'''
-DESCRIPTION:
-
-Script that actually writes a snapshot, either from a set of text files,
-or by directly passing the necessary data to the function write_snapshot
-(for details on the syntax, read the function).
-
-In the first case, just run the following:
-
-python snapwrite.py FOLDER
-
-FOLDER: folder containing all the input files, which are:
-
-    header.txt position.txt velocity.txt id.txt masses.txt (always)
-    energy.txt density.txt smoothing.txt (in case there is gas)
-
-A file named 'init.dat' will be created.  Note that the columns of the
-positions and velocities files should be separated with tabs, as well
-as the columns of the header. Among the input files, header.txt is the
-only one that accepts comments, which should be preceded by a #.
-'''
-
 import sys
 import os
 import struct
@@ -42,7 +20,7 @@ def process_input(file_):
     return h_file
 
 
-def read_header(folder, n_part):
+def read_header(folder, n_part, flag_metals=False):
     h_file = process_input(folder + "/header.txt")
     h_data = []
     for j in n_part: # n_part
@@ -61,11 +39,16 @@ def read_header(folder, n_part):
     h_data.append(float(h_file[8][0])) # omega0
     h_data.append(float(h_file[9][0])) # omega_lambda
     h_data.append(float(h_file[10][0])) # hubble_param
+    h_data.append(int(h_file[11][0])) # flag_age
+    if(flag_metals): # flag_metals
+      h_data.append(1) 
+    else:
+      h_data.append(int(h_file[12][0]))
 
     # blank, present in the header
-    for i in np.arange(96):
+    for i in np.arange(88):
         h_data.append('\0')
-    s = struct.Struct('iiiiii dddddd d d i i iiiiii i i dddd cccccccccccc\
+    s = struct.Struct('iiiiii dddddd d d i i iiiiii i i dddd ii cccc\
                        cccccccccccccccccccccccccccccccccccccccccccccccccc\
                        cccccccccccccccccccccccccccccccccc')
     packed_data = s.pack(*h_data)
@@ -96,45 +79,34 @@ def write_block(f, block_data, data_type, block_name):
     write_dummy(f, [nbytes])
 
 
-def write_snapshot(n_part, folder=None, from_text=True, data_list=None,
-                   outfile='init.dat'):
+def write_snapshot(n_part, folder=None, data_list=None, outfile='init.dat'):
     N_gas = n_part[0]
-    if(from_text and not folder):
-        print ("error: can't call write_snapshot with from_text=True\n"
-               "and without an input files folder.")
-    if(not from_text):
-        folder = os.getcwd()
+    folder = os.getcwd()
 
-    # Erasing the input file before opening it.
+    # Erasing the output file before opening it.
     open(outfile, 'w').close()
     f = file(outfile, 'a')
-    header_data = read_header(folder, n_part)
-    if(from_text):
-        pos_data = np.fromfile(folder + "position.txt", sep='\t')
-        vel_data = np.fromfile(folder + "velocity.txt", sep='\t')
-        ID_data = np.fromfile(folder + "id.txt", dtype=int, sep='\t')
-        mass_data = np.fromfile(folder + "masses.txt", sep='\t')
-        if(N_gas > 0):
-            U_data = np.fromfile(folder + "energy.txt", sep='\t')
-            rho_data = np.fromfile(folder + "density.txt", sep='\t')
-            smoothing_data = np.fromfile(folder + "smoothing.txt", sep='\t')
+    pos_data = data_list[0]
+    vel_data = data_list[1]
+    ID_data = data_list[2]
+    mass_data = data_list[3]
+    if len(data_list) > 7:
+        Z = data_list[7]
+        header_data = read_header(folder, n_part, flag_metals=True)
     else:
-        pos_data = data_list[0]
-        vel_data = data_list[1]
-        ID_data = data_list[2]
-        mass_data = data_list[3]
-        if(N_gas > 0):
-            U_data = data_list[4]
-            rho_data = data_list[5]
-            smoothing_data = data_list[6]
-
+        header_data = read_header(folder, n_part)
     write_block(f, header_data, None, 'HEAD')
     write_block(f, pos_data, 'f', 'POS ')
     write_block(f, vel_data, 'f', 'VEL ')
     write_block(f, ID_data, 'i', 'ID  ')
     write_block(f, mass_data, 'f', 'MASS')
     if(N_gas > 0):
+        U_data = data_list[4]
+        rho_data = data_list[5]
+        smoothing_data = data_list[6]
         write_block(f, U_data, 'f', 'U   ')
+        if(len(data_list) > 7):
+            write_block(f, Z, 'f', 'Z   ')
         write_block(f, rho_data, 'f', 'RHO ')
         write_block(f, smoothing_data, 'f', 'HSML')
     f.close()
