@@ -10,7 +10,7 @@ import numpy.random as nprand
 from scipy import integrate
 from scipy.optimize import brentq
 
-from snapwrite import process_input, write_snapshot
+from snapwrite import write_snapshot
 import optimized_functions as opt
 syspath.append(path.join(path.dirname(__file__), '..', 'misc'))
 from units import temp_to_internal_energy
@@ -81,8 +81,8 @@ def init():
   gas_core = args.gas_core
   dm_core = args.dm_core
   output = args.o
-  if not (path.isfile("header.txt") and path.isfile("cluster_params.ini")):
-    print "header.txt or cluster_params.ini missing."
+  if not path.isfile("cluster_params.ini"):
+    print "cluster_params.ini missing."
     exit(0)
   if args.no_dm:
     if args.no_gas:
