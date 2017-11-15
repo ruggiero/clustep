@@ -149,9 +149,9 @@ def gas_density(r):
     return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
-# the factor variable restricts the radius to truncation_radius 
 def set_positions():
   if(dm):
+    # the factor variable restricts the radius to truncation_radius
     factor = cumulative(truncation_radius, M_dm, a_dm, dm_core)/M_dm
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
                   (M_dm * factor), M_dm, a_dm, dm_core)
@@ -160,8 +160,6 @@ def set_positions():
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
     ys = radii_dm * np.sin(thetas) * np.sin(phis)
     zs = radii_dm * np.cos(thetas)
-
-    # Older NumPy versions freak out without this line.
     coords_dm = np.column_stack((xs, ys, zs))
     coords_dm = np.array(coords_dm, order='C')
     coords_dm.shape = (1, -1) # Linearizing the array.
