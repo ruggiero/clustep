@@ -59,7 +59,7 @@ def generate_cluster():
 def init():
   global gas, dm, gas_core, dm_core, output
   global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas, Z
-  global max_radius
+  global truncation_radius
   flags = parser(description="Generates an initial conditions file\
                 for a galaxy cluster halo simulation.")
   flags.add_argument('--gas-core', help='Sets gamma=0 in the Dehnen density\
@@ -108,7 +108,7 @@ def init():
     a_gas = config.getfloat('gas', 'a_gas')
     N_gas = config.getint('gas', 'N_gas')
     Z = config.getfloat('gas', 'Z')
-  max_radius = config.getfloat('global', 'truncation_radius')
+  truncation_radius = config.getfloat('global', 'truncation_radius')
 
 
 # Inverse cumulative mass function. Depends on both the parameters M and
@@ -149,10 +149,10 @@ def gas_density(r):
     return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
-# the factor variable restricts the radius to max_radius 
+# the factor variable restricts the radius to truncation_radius 
 def set_positions():
   if(dm):
-    factor = cumulative(max_radius, M_dm, a_dm, dm_core)/M_dm
+    factor = cumulative(truncation_radius, M_dm, a_dm, dm_core)/M_dm
     radii_dm = inverse_cumulative(nprand.sample(N_dm) *
                   (M_dm * factor), M_dm, a_dm, dm_core)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
@@ -166,7 +166,7 @@ def set_positions():
     coords_dm = np.array(coords_dm, order='C')
     coords_dm.shape = (1, -1) # Linearizing the array.
   if(gas):
-    factor = cumulative(max_radius, M_gas, a_gas, gas_core)/M_gas
+    factor = cumulative(truncation_radius, M_gas, a_gas, gas_core)/M_gas
     radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * factor),
                    M_gas, a_gas, gas_core)
     thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
