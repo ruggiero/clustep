@@ -4,6 +4,7 @@ from bisect import bisect_left
 from os import path
 from argparse import ArgumentParser as parser
 from ConfigParser import ConfigParser
+import time
 
 import numpy as np
 import numpy.random as nprand
@@ -199,10 +200,13 @@ def set_velocities(radii_dm=None):
       DF_tabulated.append([i, DF(i)])
     DF_tabulated = np.array(DF_tabulated)
     print "done with DF tabulation"
+    t0 = time.time()
+    time_count = 0
     for i in np.arange(len(radii_dm)):
       vels.append(sample_velocity(radii_dm[i], DF_tabulated))
-      if(i % 1000 == 0):
+      if(int(time.time()-t0) > time_count):
         print 'set velocity', i, 'of', N_dm
+        time_count += 1
   vels = np.array(vels, order='C')
   vel_COM = sum(vels) # The velocity of the center of mass.
   if(gas):
