@@ -57,33 +57,24 @@ def generate_cluster():
 
 
 def init():
-  global gas, dm, gas_core, dm_core, output
+  global gas, dm, output
   global M_dm, a_dm, N_dm, M_gas, a_gas, N_gas, Z
-  global truncation_radius
+  global truncation_radius, gamma_gas, gamma_dm
   flags = parser(description="Generates an initial conditions file\
                 for a galaxy cluster halo simulation.")
-  flags.add_argument('--gas-core', help='Sets gamma=0 in the Dehnen density\
-           profile assigned to the gas component, causing it to\
-           feature a central core. By default gamma=1, which is\
-           equivalent to a Hernquist density profile. See\
-           1993MNRAS.265..250D and 1990ApJ...356..359H.',
-           action='store_true')
-  flags.add_argument('--dm-core', help='Exactly the same as above, but for\
-           the dark matter component.', action='store_true')
   flags.add_argument('--no-dm', help='No dark matter particles in the\
            initial conditions. The dark matter potential is\
            still used when calculating the gas temperatures.',
            action='store_true')
-  flags.add_argument('--no-gas', help='No gas, only dark matter.',
+  flags.add_argument('--no-gas', help='Gas is completely ignored, and\
+           only dark matter is included.',
            action='store_true')
   flags.add_argument('-o', help='The name of the output file.',
            metavar="init.dat", default="init.dat")
   args = flags.parse_args()
-  gas_core = args.gas_core
-  dm_core = args.dm_core
   output = args.o
-  if not path.isfile("cluster_params.ini"):
-    print "cluster_params.ini missing."
+  if not path.isfile("params_cluster.ini"):
+    print "params_cluster.ini missing."
     exit(0)
   if args.no_dm:
     if args.no_gas:
@@ -99,62 +90,52 @@ def init():
     gas = True
     dm = True
   config = ConfigParser()
-  config.read("cluster_params.ini")
+  config.read("params_cluster.ini")
   M_dm = config.getfloat('dark_matter', 'M_dm')
   a_dm = config.getfloat('dark_matter', 'a_dm')
   N_dm = config.getint('dark_matter', 'N_dm')
+  gamma_dm = config.getfloat('dark_matter', 'gamma_dm')
   if(gas):
     M_gas = config.getfloat('gas', 'M_gas')
     a_gas = config.getfloat('gas', 'a_gas')
     N_gas = config.getint('gas', 'N_gas')
     Z = config.getfloat('gas', 'Z')
+    gamma_gas = config.getfloat('gas', 'gamma_gas')
   truncation_radius = config.getfloat('global', 'truncation_radius')
 
 
-# Inverse cumulative mass function. Depends on both the parameters M and
-# a, in the Dehnen density profile. Mc is a number between 0 and M.
-def inverse_cumulative(Mc, M, a, core):
-  if(core):
-    return ((a * (Mc**(2/3.)*M**(4/3.) + Mc*M + Mc**(4/3.)*M**(2/3.))) /
-         (Mc**(1/3.) * M**(2/3.) * (M-Mc)))
-  else:
-    return (a * ((Mc*M)**0.5 + Mc)) / (M-Mc)
+def dehnen_cumulative(r, M, a, gamma):
+  return M * (r/(r+a))**(3-gamma)
 
 
-def cumulative(r, M, a, core):
-  if(core):
-    return M*r**3/(r+a)**3
-  else:
-    return M*r**2/(r+a)**2
+# Inverse cumulative mass function. Mc is a number between 0 and M.
+def dehnen_inverse_cumulative(Mc, M, a, gamma):
+  results = []
+  for i in Mc:
+    results.append(brentq(lambda r: dehnen_cumulative(r, M, a, gamma) - i, 0, 1.0e10))
+  return np.array(results)
 
 
 def potential(r):
   phi = 0
   if(gas):
-    if(gas_core):
-      phi += -(G*M_gas) / 2 * (2*r + a_gas) / (r+a_gas)**2 
+    if gamma_gas != 2:
+      phi += (G*M_gas)/a_gas * (-1.0/(2-gamma_gas)) * (1-(r/(r+a_gas))**(2-gamma_gas))
     else:
-      phi += -(G*M_gas) / (r+a_gas)
-  if(dm_core):
-    phi += -(G*M_dm) / 2 * (2*r + a_dm) / (r+a_dm)**2
+      phi += (G*M_gas)/a_gas * np.log(r/(r+a_gas))
+  if gamma_dm != 2:
+    phi += (G*M_dm)/a_dm * (-1.0/(2-gamma_dm)) * (1-(r/(r+a_dm))**(2-gamma_dm))
   else:
-    phi += -(G*M_dm) / (r + a_dm)
+    phi += (G*M_dm)/a_dm * np.log(r/(r+a_dm))
   return phi
-
-
-def gas_density(r):
-  if(gas_core): 
-    return (3*M_gas*a_gas) / (4*np.pi*(r+a_gas)**4)
-  else:  
-    return (M_gas*a_gas) / (2*np.pi*r*(r+a_gas)**3)
 
 
 def set_positions():
   if(dm):
     # the factor variable restricts the radius to truncation_radius
-    factor = cumulative(truncation_radius, M_dm, a_dm, dm_core)/M_dm
-    radii_dm = inverse_cumulative(nprand.sample(N_dm) *
-                  (M_dm * factor), M_dm, a_dm, dm_core)
+    factor = dehnen_cumulative(truncation_radius, M_dm, a_dm, gamma_dm)/M_dm
+    radii_dm = dehnen_inverse_cumulative(nprand.sample(N_dm) *
+                  (M_dm * factor), M_dm, a_dm, gamma_dm)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
@@ -164,9 +145,9 @@ def set_positions():
     coords_dm = np.array(coords_dm, order='C')
     coords_dm.shape = (1, -1) # Linearizing the array.
   if(gas):
-    factor = cumulative(truncation_radius, M_gas, a_gas, gas_core)/M_gas
-    radii_gas = inverse_cumulative(nprand.sample(N_gas) * (M_gas * factor),
-                   M_gas, a_gas, gas_core)
+    factor = dehnen_cumulative(truncation_radius, M_gas, a_gas, gamma_gas)/M_gas
+    radii_gas = dehnen_inverse_cumulative(nprand.sample(N_gas) * (M_gas*factor),
+                   M_gas, a_gas, gamma_gas)
     thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
     phis = 2 * np.pi * nprand.sample(N_gas)
     xs = radii_gas * np.sin(thetas) * np.cos(phis)
@@ -225,8 +206,8 @@ def DF(E):
     # This is r(epsilon), where psi(r) - epsilon = 0.
     limit = brentq(lambda r : -potential(r) - epsilon, 0, 1.0e10)
     if(gas):
-      if(gas_core):
-        if(dm_core):
+      if(gamma_gas == 0):
+        if(gamma_dm == 0):
           integral = integrate.quad(opt.aux_core_core, limit, np.inf,
             args=(M_gas, a_gas, M_dm, a_dm, epsilon), 
             full_output=-1)
@@ -235,7 +216,7 @@ def DF(E):
             args=(M_gas, a_gas, M_dm, a_dm, epsilon),
             full_output=-1)
       else:
-        if(dm_core):
+        if(gamma_dm == 0):
           integral = integrate.quad(opt.aux_cusp_core, limit, np.inf,
             args=(M_gas, a_gas, M_dm, a_dm, epsilon),
             full_output=-1)
@@ -244,7 +225,7 @@ def DF(E):
             args=(M_gas, a_gas, M_dm, a_dm, epsilon),
             full_output=-1)
     else:
-      if(dm_core):
+      if(gamma_dm == 0):
         integral = integrate.quad(opt.aux_core, limit, np.inf,
           args=(M_dm, a_dm, epsilon), full_output=-1) 
       else:
@@ -286,9 +267,9 @@ def temperature(r):
   meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
 
   integral = integrate.quad(opt.T_integrand, r, np.inf,
-    args=(M_gas, a_gas, M_dm, a_dm, int(gas_core), int(dm_core)),
+    args=(M_gas, a_gas, M_dm, a_dm, gamma_gas, gamma_dm),
     full_output=-1)
-  result = integral[0] / opt.gas_density(r, M_gas, a_gas, int(gas_core))
+  result = integral[0] / opt.dehnen_density(r, M_gas, a_gas, gamma_gas)
 
   temp_i = MP_OVER_KB * meanweight_i * result
   temp_n = MP_OVER_KB * meanweight_n * result

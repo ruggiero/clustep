@@ -6,7 +6,7 @@ from ConfigParser import ConfigParser
 
 
 config = ConfigParser()
-config.read("cluster_params.ini")
+config.read("params_cluster.ini")
 
 
 def read_header(folder, n_part):
