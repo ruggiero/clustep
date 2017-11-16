@@ -135,7 +135,7 @@ def set_positions():
     # the factor variable restricts the radius to truncation_radius
     factor = dehnen_cumulative(truncation_radius, M_dm, a_dm, gamma_dm)/M_dm
     radii_dm = dehnen_inverse_cumulative(nprand.sample(N_dm) *
-                  (M_dm * factor), M_dm, a_dm, gamma_dm)
+                  (M_dm*factor), M_dm, a_dm, gamma_dm)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
@@ -148,7 +148,7 @@ def set_positions():
     factor = dehnen_cumulative(truncation_radius, M_gas, a_gas, gamma_gas)/M_gas
     radii_gas = dehnen_inverse_cumulative(nprand.sample(N_gas) * (M_gas*factor),
                    M_gas, a_gas, gamma_gas)
-    thetas = np.arccos(nprand.sample(N_gas) * 2 - 1)
+    thetas = np.arccos(nprand.sample(N_gas)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_gas)
     xs = radii_gas * np.sin(thetas) * np.cos(phis)
     ys = radii_gas * np.sin(thetas) * np.sin(phis)
@@ -263,8 +263,8 @@ def sample_velocity(radius, DF_tabulated):
 def temperature(r):
   MP_OVER_KB = 121.148
   HYDROGEN_MASSFRAC = 0.76
-  meanweight_n = 4.0 / (1 + 3 * HYDROGEN_MASSFRAC)
-  meanweight_i = 4.0 / (3 + 5 * HYDROGEN_MASSFRAC)
+  meanweight_n = 4.0 / (1 + 3*HYDROGEN_MASSFRAC)
+  meanweight_i = 4.0 / (3 + 5*HYDROGEN_MASSFRAC)
 
   integral = integrate.quad(opt.T_integrand, r, np.inf,
     args=(M_gas, a_gas, M_dm, a_dm, gamma_gas, gamma_dm),
