@@ -53,7 +53,7 @@ def aux_core(double r, double M_dm, double a_dm, double epsilon):
 
 
 def dehnen_density(double r, double M, double a, double gamma):
- return ((3-gamma)*M)/(4*M_PI) * a/(pow(r, gamma)*pow(r+a, 4-gamma))
+  return ((3-gamma)*M)/(4*M_PI) * a/(pow(r, gamma)*pow(r+a, 4-gamma))
 
 
 cdef double cumulative_mass(double r, double M_gas, double a_gas, double M_dm,
