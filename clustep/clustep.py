@@ -105,7 +105,7 @@ def init():
 
 
 def dehnen_cumulative(r, M, a, gamma):
-  return M * (r/(r+a))**(3-gamma)
+  return M * (r/(r+float(a)))**(3-gamma)
 
 
 # Inverse cumulative mass function. Mc is a number between 0 and M.
@@ -120,13 +120,13 @@ def potential(r):
   phi = 0
   if(gas):
     if gamma_gas != 2:
-      phi += (G*M_gas)/a_gas * (-1.0/(2-gamma_gas)) * (1-(r/(r+a_gas))**(2-gamma_gas))
+      phi += (G*M_gas)/a_gas * (-1.0/(2-gamma_gas)) * (1-(r/(r+float(a_gas)))**(2-gamma_gas))
     else:
-      phi += (G*M_gas)/a_gas * np.log(r/(r+a_gas))
+      phi += (G*M_gas)/a_gas * np.log(r/(r+float(a_gas)))
   if gamma_dm != 2:
-    phi += (G*M_dm)/a_dm * (-1.0/(2-gamma_dm)) * (1-(r/(r+a_dm))**(2-gamma_dm))
+    phi += (G*M_dm)/a_dm * (-1.0/(2-gamma_dm)) * (1-(r/(r+float(a_dm)))**(2-gamma_dm))
   else:
-    phi += (G*M_dm)/a_dm * np.log(r/(r+a_dm))
+    phi += (G*M_dm)/a_dm * np.log(r/(r+float(a_dm)))
   return phi
 
 
