@@ -35,7 +35,8 @@ def generate_cluster():
       vels = set_velocities(radii_dm)
       print "calculating the temperatures"
       U = set_temperatures(radii_gas)
-      rho = np.zeros(N_gas)
+      rho = np.array([opt.dehnen_density(i, M_gas, a_gas, gamma_gas)
+                      for i in radii_gas])
       print "writing output file..."
       return [coords, vels, U, rho]
     else:
