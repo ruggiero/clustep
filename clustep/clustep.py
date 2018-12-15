@@ -133,10 +133,11 @@ def potential(r):
 
 def set_positions():
   if(dm):
+    global factor_dm
     # the factor variable restricts the radius to truncation_radius
-    factor = dehnen_cumulative(truncation_radius, M_dm, a_dm, gamma_dm)/M_dm
+    factor_dm = dehnen_cumulative(truncation_radius, M_dm, a_dm, gamma_dm)/M_dm
     radii_dm = dehnen_inverse_cumulative(nprand.sample(N_dm) *
-                  (M_dm*factor), M_dm, a_dm, gamma_dm)
+                  (M_dm*factor_dm), M_dm, a_dm, gamma_dm)
     thetas = np.arccos(nprand.sample(N_dm)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_dm)
     xs = radii_dm * np.sin(thetas) * np.cos(phis)
@@ -146,8 +147,9 @@ def set_positions():
     coords_dm = np.array(coords_dm, order='C')
     coords_dm.shape = (1, -1) # Linearizing the array.
   if(gas):
-    factor = dehnen_cumulative(truncation_radius, M_gas, a_gas, gamma_gas)/M_gas
-    radii_gas = dehnen_inverse_cumulative(nprand.sample(N_gas) * (M_gas*factor),
+    global factor_gas
+    factor_gas = dehnen_cumulative(truncation_radius, M_gas, a_gas, gamma_gas)/M_gas
+    radii_gas = dehnen_inverse_cumulative(nprand.sample(N_gas) * (M_gas*factor_gas),
                    M_gas, a_gas, gamma_gas)
     thetas = np.arccos(nprand.sample(N_gas)*2 - 1)
     phis = 2 * np.pi * nprand.sample(N_gas)
@@ -302,12 +304,12 @@ def write_input_file(cluster_data):
     rho = cluster_data[3]
     smooths = np.zeros(N_gas)
     masses_gas = np.empty(N_gas)
-    masses_gas.fill(M_gas / N_gas)
+    masses_gas.fill((M_gas*factor_gas) / N_gas)
     Zs = np.zeros(N_gas)
     Zs.fill(Z)
     if(dm):
       masses_dm = np.empty(N_dm)
-      masses_dm.fill(M_dm / N_dm)
+      masses_dm.fill((M_dm*factor_dm) / N_dm)
       masses = np.concatenate((masses_gas, masses_dm))
       ids = np.arange(1, N_gas + N_dm + 1)
       write_snapshot(n_part=[N_gas, N_dm, 0, 0, 0, 0], outfile=output,
