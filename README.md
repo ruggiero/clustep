@@ -61,14 +61,10 @@ aren't all that well written as of now.
 * [Ruggiero & Lima Neto (2017)](http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1703.08550)
 
 
-## Author
-
-    Rafael Ruggiero
-    Ph.D student at Universidade de São Paulo (USP), Brazil
-    Contact: rafael.ruggiero [at] usp.br
+## Acknowledgements
 
 Credits for Prof. Dr. Rubens Machado (http://paginapessoal.utfpr.edu.br/rubensmachado),
-for the vital support and suggestions.
+for the vital support and suggestions in writing this code.
 
 ## Disclaimer
 
